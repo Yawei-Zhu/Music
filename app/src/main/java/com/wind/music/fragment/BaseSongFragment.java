@@ -40,7 +40,7 @@ public abstract class BaseSongFragment extends ListFragment {
         getRecyclerView().setLayoutManager(lm);
 
         billBoard = new BillBoard();
-        adapter = new SongAdapter(getContext(), billBoard.songs);
+//        adapter = new SongAdapter(getContext(), billBoard.songs);
         getRecyclerView().setAdapter(adapter);
 
         RecyclerView.ItemDecoration decor = new DefaultDecoration();
