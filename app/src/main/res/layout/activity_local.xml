@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_grey_light"
     android:orientation="vertical"
     tools:context="com.wind.music.activity.LocalActivity">
 
@@ -46,10 +47,15 @@
         android:background="@android:color/white"
         android:orientation="horizontal">
 
-        <Space
+        <TextView
+            android:id="@+id/tv_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_marginLeft="@dimen/margin_l"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:textColor="@color/text_grey_hard"
+            android:textSize="@dimen/text_l" />
 
         <TextView
             android:id="@+id/tv_mode"

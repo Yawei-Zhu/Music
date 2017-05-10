@@ -5,18 +5,16 @@ package com.wind.music.bean;
  */
 
 public class Song {
-    public String artist_id;
-    public String language;
-    public String pic_big;
-    public String pic_small;
-    public String country;
-    public String publishtime;
-    public String album_no;
-    public String lrclink;;
-    public int file_duration;
-    public String song_id;
+    public long _id;
     public String title;
-    public String artist_name;
+    public String data;
+    public long duration;
 
-    public String path;
+    public long artist_id;
+    public String artist;
+
+    public long album_id;
+    public String album;
+    public String album_art;
+
 }

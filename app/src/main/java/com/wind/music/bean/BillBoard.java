@@ -9,5 +9,5 @@ import java.util.List;
 
 public class BillBoard {
     public String havemore;
-    public List<Song> songs = new ArrayList<>();
+    public List<NetworkSong> songs = new ArrayList<>();
 }
