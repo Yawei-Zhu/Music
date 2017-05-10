@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:focusable="true"
+    android:clickable="true"
+    android:padding="@dimen/margin_l">
+
+    <TextView
+        android:id="@+id/tv_sequence"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:text="00"
+        android:textColor="@color/text_grey_light"
+        android:textSize="@dimen/text_m" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/margin_l"
+        android:layout_toRightOf="@+id/tv_sequence"
+        android:text="大约在冬季"
+        android:textColor="@color/text_grey_hard"
+        android:textSize="@dimen/text_l" />
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tv_title"
+        android:layout_below="@+id/tv_title"
+        android:layout_marginTop="@dimen/margin_m"
+        android:text="齐秦"
+        android:textColor="@color/text_grey"
+        android:textSize="@dimen/text_m" />
+
+</RelativeLayout>
