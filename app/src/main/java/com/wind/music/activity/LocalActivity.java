@@ -2,10 +2,12 @@ package com.wind.music.activity;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -105,7 +107,8 @@ public class LocalActivity extends AppCompatActivity {
         adapter.setOnItemClickListener(new SongAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Song item, int position) {
-                play(position);
+                pausePosition = 0;
+                play(index = position);
             }
         });
 
@@ -114,6 +117,7 @@ public class LocalActivity extends AppCompatActivity {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mp.seekTo(pausePosition);
+                pausePosition = 0;
                 mp.start();
                 tvPlay.setText("暂停");
             }
@@ -237,5 +241,26 @@ public class LocalActivity extends AppCompatActivity {
         player.stop();
         player.release();
         player = null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("WARNING")
+                .setMessage("Are you sure you want to close the music player?")
+                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        LocalActivity.super.onBackPressed();
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create().show();
     }
 }
