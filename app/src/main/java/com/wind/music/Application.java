@@ -1,5 +1,6 @@
 package com.wind.music;
 
+import com.wind.music.util.LoadLocal;
 import com.wind.music.util.Network;
 
 /**
@@ -11,10 +12,12 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         Network.init(this);
+        LoadLocal.init(this);
     }
 
     @Override
     public void onTerminate() {
         Network.release();
+        LoadLocal.release();
     }
 }
