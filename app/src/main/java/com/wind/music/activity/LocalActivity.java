@@ -1,19 +1,14 @@
 package com.wind.music.activity;
 
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.media.MediaPlayer;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -21,12 +16,20 @@ import com.wind.music.R;
 import com.wind.music.adapter.SongAdapter;
 import com.wind.music.bean.Song;
 import com.wind.music.decoration.DefaultDecoration;
+import com.wind.music.util.LoadLocal;
+import com.wind.music.util.LoadLocalListener;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class LocalActivity extends AppCompatActivity {
     private static final String TAG = LocalActivity.class.getSimpleName();
+    private static final int MODE_CYCLE = 0;
+    private static final int MODE_ORDER = 1;
+    private static final int MODE_RANDOM = 2;
+    private static final int MODE_SINGLE = 3;
+
 
     private RecyclerView recyclerView;
     private TextView tvPlay;
@@ -45,209 +48,25 @@ public class LocalActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_local);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        TextView tv = (TextView) findViewById(R.id.tv_mode);
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TextView tv = (TextView) v;
-                mode++;
-                if (mode == 4) {
-                    mode = 0;
-                }
-                switch (mode) {
-                    case 0:
-                        tv.setText("循环");
-                        break;
-                    case 1:
-                        tv.setText("顺序");
-                        break;
-                    case 2:
-                        tv.setText("随机");
-                        break;
-                    case 3:
-                        tv.setText("单曲");
-                        break;
-                }
-            }
-        });
-
-        tvTitle = (TextView) findViewById(R.id.tv_title);
-
-        tvPlay = (TextView) findViewById(R.id.tv_play);
-        tvPlay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (player != null) {
-                    if (player.isPlaying()) {
-                        pausePosition = player.getCurrentPosition();
-                        player.stop();
-                        tvPlay.setText("播放");
-                    } else {
-                        play(index);
-                        tvPlay.setText("暂停");
-                    }
-                }
-            }
-        });
-
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        LinearLayoutManager lm = new LinearLayoutManager(LocalActivity.this);
-        lm.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(lm);
-
-        recyclerView.addItemDecoration(new DefaultDecoration());
-
-        songs = new ArrayList<>();
-        adapter = new SongAdapter(LocalActivity.this, songs);
-        recyclerView.setAdapter(adapter);
-
-        adapter.setOnItemClickListener(new SongAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(Song item, int position) {
-                pausePosition = 0;
-                play(index = position);
-            }
-        });
-
-        player = new MediaPlayer();
-        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.seekTo(pausePosition);
-                pausePosition = 0;
-                mp.start();
-                tvPlay.setText("暂停");
-            }
-        });
-        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                switch (mode) {
-                    case 0:
-                        index++;
-                        if (index == songs.size()) {
-                            index = 0;
-                        }
-                        play(index);
-                        break;
-                    case 1:
-                        index++;
-                        if (index < songs.size()) {
-                            play(index);
-                        } else {
-                        }
-                        break;
-                    case 2:
-                        Random r = new Random();
-                        index = r.nextInt(songs.size());
-                        play(index);
-                        break;
-                    case 3:
-                        mp.seekTo(0);
-                        mp.start();
-                        break;
-                }
-            }
-        });
-
-    }
-
-    private void play(int index) {
-        try {
-            Song song = songs.get(index);
-            player.reset();
-            player.setDataSource(song.data);
-            player.prepareAsync();
-            tvTitle.setText(song.title);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
+        initLayout();
         loadData();
-    }
-
-    private void loadData() {
-        ContentResolver resolver = getContentResolver();
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = null;
-        String selection = null;
-        String[] selectionArgs = null;
-        String sortOrder = MediaStore.Audio.Media.DEFAULT_SORT_ORDER;
-        Cursor cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder);
-        ArrayList<Song> data = new ArrayList<>();
-        int count = cursor.getCount();
-        Log.i(TAG, "loadData: count=" + count);
-        cursor.moveToFirst();
-        int cc = cursor.getColumnCount();
-        for (int i = 0; i < cc; i++) {
-            Log.i(TAG, "loadData: index:" + i + ", " + cursor.getColumnName(i) + "=" + cursor.getString(i));
-        }
-        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            Song song = new Song();
-            data.add(song);
-            song._id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-            song.title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-            song.data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-            song.duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
-
-            song.artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-            song.artist_id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID));
-
-            song.album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-            song.album_id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-
-            song.album_art = query(resolver, song.album_id, sortOrder);
-        }
-
-        cursor.close();
-
-        songs.clear();
-        songs.addAll(data);
-        adapter.notifyDataSetChanged();
-        index = 0;
-        tvTitle.setText(songs.get(index).title);
-        Uri contentUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-        long id = songs.get(0)._id;
-        Uri uri1 = ContentUris.withAppendedId(contentUri, id);
-    }
-
-    private String query(ContentResolver resolver, long album_id, String sortOrder) {
-        Uri uri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-        String selection = MediaStore.Audio.Albums._ID + "=?";
-        String[] selectionArgs = new String[]{String.valueOf(album_id)};
-        Cursor cursor = resolver.query(uri, null, selection, selectionArgs, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            String album_art = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-            cursor.close();
-            return album_art;
-        } else if (cursor != null) {
-            cursor.close();
-        }
-        return null;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        player.stop();
-        player.release();
-        player = null;
+        if (player != null) {
+            player.stop();
+            player.release();
+            player = null;
+        }
     }
 
     @Override
     public void onBackPressed() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("WARNING")
-                .setMessage("Are you sure you want to close the music player?")
+                .setMessage("Are you want to close Music?")
                 .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -263,4 +82,196 @@ public class LocalActivity extends AppCompatActivity {
                 })
                 .create().show();
     }
+
+    private void initLayout() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
+
+        TextView tv = (TextView) findViewById(R.id.tv_mode);
+        if (tv != null) {
+            tv.setOnClickListener(switchPlayModeListener);
+        }
+
+        tvTitle = (TextView) findViewById(R.id.tv_title);
+
+        tvPlay = (TextView) findViewById(R.id.tv_play);
+        if (tvPlay != null) {
+            tvPlay.setOnClickListener(pauseListener);
+        }
+
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        songs = new ArrayList<>();
+        adapter = new SongAdapter(LocalActivity.this, songs);
+        adapter.setOnItemClickListener(selectSongListener);
+
+        if (recyclerView != null) {
+            LinearLayoutManager lm = new LinearLayoutManager(LocalActivity.this);
+            lm.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(lm);
+            recyclerView.addItemDecoration(new DefaultDecoration());
+            recyclerView.setAdapter(adapter);
+        }
+    }
+
+    private void loadData() {
+        LoadLocal.loadSongs(new LoadLocalListener<List<Song>>() {
+            @Override
+            public void onRespond(List<Song> data) {
+                if (songs != null) {
+                    songs.addAll(data);
+                }
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    private void initPlayer() {
+        player = new MediaPlayer();
+        player.setOnPreparedListener(onPreparedListener);
+        player.setOnCompletionListener(onCompletionListener);
+        player.setOnErrorListener(onErrorListener);
+    }
+
+    private void play(int index) {
+        if (songs != null && songs.size() > index) {
+            Song song = songs.get(index);
+            try {
+                if (player == null) {
+                    initPlayer();
+                }
+                player.reset();
+                player.setDataSource(song.data);
+                player.prepareAsync();
+                if (tvTitle != null) {
+                    tvTitle.setText(song.title);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private final View.OnClickListener switchPlayModeListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mode++;
+            if (mode == 4) {
+                mode = 0;
+            }
+
+            if (v instanceof TextView) {
+                TextView tv = (TextView) v;
+                switch (mode) {
+                    case MODE_CYCLE:
+                        tv.setText("循环");
+                        break;
+                    case MODE_ORDER:
+                        tv.setText("顺序");
+                        break;
+                    case MODE_RANDOM:
+                        tv.setText("随机");
+                        break;
+                    case MODE_SINGLE:
+                        tv.setText("单曲");
+                        break;
+                }
+            }
+        }
+    };
+
+    private final View.OnClickListener pauseListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (player != null) {
+                if (player.isPlaying()) {
+                    pausePosition = player.getCurrentPosition();
+                    player.stop();
+                    if (v instanceof TextView) {
+                        ((TextView) v).setText("播放");
+                    }
+                } else {
+                    play(index);
+                    if (v instanceof TextView) {
+                        ((TextView) v).setText("暂停");
+                    }
+                }
+            }
+        }
+    };
+
+    private final SongAdapter.OnItemClickListener selectSongListener = new SongAdapter.OnItemClickListener() {
+        @Override
+        public void onItemClick(Song item, int position) {
+            pausePosition = 0;
+            play(index = position);
+        }
+    };
+
+    private final MediaPlayer.OnPreparedListener onPreparedListener = new MediaPlayer.OnPreparedListener() {
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            mp.seekTo(pausePosition);
+            pausePosition = 0;
+            mp.start();
+            if (tvPlay != null) {
+                tvPlay.setText("暂停");
+            }
+        }
+    };
+
+    private final MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            switch (mode) {
+                case MODE_CYCLE:
+                    index++;
+                    if (index == songs.size()) {
+                        index = 0;
+                    }
+                    play(index);
+                    break;
+                case MODE_ORDER:
+                    index++;
+                    if (index < songs.size()) {
+                        play(index);
+                    }
+                    break;
+                case MODE_RANDOM:
+                    Random r = new Random();
+                    index = r.nextInt(songs.size());
+                    play(index);
+                    break;
+                case MODE_SINGLE:
+                    play(index);
+                    break;
+            }
+        }
+    };
+
+    private final MediaPlayer.OnErrorListener onErrorListener = new MediaPlayer.OnErrorListener() {
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            switch (what) {
+                case MediaPlayer.MEDIA_ERROR_IO:
+                    break;
+                case MediaPlayer.MEDIA_ERROR_MALFORMED:
+                    break;
+                case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
+                    break;
+                case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
+                    break;
+                case MediaPlayer.MEDIA_ERROR_TIMED_OUT:
+                    break;
+                case MediaPlayer.MEDIA_ERROR_UNKNOWN:
+                    break;
+                case MediaPlayer.MEDIA_ERROR_UNSUPPORTED:
+                    break;
+            }
+            return true;
+        }
+    };
 }
