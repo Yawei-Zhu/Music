@@ -186,18 +186,16 @@ public class LocalActivity extends AppCompatActivity {
     private final View.OnClickListener pauseListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (player != null) {
-                if (player.isPlaying()) {
-                    pausePosition = player.getCurrentPosition();
-                    player.stop();
-                    if (v instanceof TextView) {
-                        ((TextView) v).setText("播放");
-                    }
-                } else {
-                    play(index);
-                    if (v instanceof TextView) {
-                        ((TextView) v).setText("暂停");
-                    }
+            if (player != null && player.isPlaying()) {
+                pausePosition = player.getCurrentPosition();
+                player.stop();
+                if (v instanceof TextView) {
+                    ((TextView) v).setText("播放");
+                }
+            } else {
+                play(index);
+                if (v instanceof TextView) {
+                    ((TextView) v).setText("暂停");
                 }
             }
         }

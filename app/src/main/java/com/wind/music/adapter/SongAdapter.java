@@ -3,7 +3,6 @@ package com.wind.music.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -55,7 +54,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = View.inflate(getContext(), R.layout.item_song_billboard, null);
+        View v = View.inflate(getContext(), R.layout.item_song_local, null);
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        v.setLayoutParams(params);
         v.setOnClickListener(_OnClickListener);
         return new ViewHolder(v);
     }

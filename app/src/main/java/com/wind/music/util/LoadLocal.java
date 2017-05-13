@@ -1,7 +1,6 @@
 package com.wind.music.util;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +8,7 @@ import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.wind.music.bean.Artist;
 import com.wind.music.bean.Song;
 
 import java.util.ArrayList;
@@ -56,13 +56,6 @@ public class LoadLocal {
         String[] selectionArgs = null;
         String sortOrder = MediaStore.Audio.Media.DEFAULT_SORT_ORDER;
         Cursor cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder);
-        int count = cursor.getCount();
-        Log.i(TAG, "loadData: count=" + count);
-        cursor.moveToFirst();
-        int cc = cursor.getColumnCount();
-        for (int i = 0; i < cc; i++) {
-            Log.i(TAG, "loadData: index:" + i + ", " + cursor.getColumnName(i) + "=" + cursor.getString(i));
-        }
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             Song song = new Song();
             data.add(song);
@@ -80,6 +73,10 @@ public class LoadLocal {
             song.album_art = query(resolver, song.album_id);
         }
         cursor.close();
+        queryArtist();
+        queryAlbum();
+        queryGenre();
+        queryPlaylists();
         return data;
     }
 
@@ -97,6 +94,70 @@ public class LoadLocal {
             cursor.close();
         }
         return null;
+    }
+
+    private static List<Artist> queryArtist() {
+        List<Artist> artists = new ArrayList<>();
+        Uri uri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
+        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int column = cursor.getColumnCount();
+            Log.i(TAG, "queryArtist: start");
+            for (int i = 0; i < column; i++) {
+                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
+            }
+            Log.i(TAG, "queryArtist: end");
+            cursor.close();
+        }
+        return artists;
+    }
+
+    private static List<Artist> queryAlbum() {
+        List<Artist> artists = new ArrayList<>();
+        Uri uri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
+        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int column = cursor.getColumnCount();
+            Log.i(TAG, "queryAlbum: start");
+            for (int i = 0; i < column; i++) {
+                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
+            }
+            Log.i(TAG, "queryAlbum: end");
+            cursor.close();
+        }
+        return artists;
+    }
+
+    private static List<Artist> queryGenre() {
+        List<Artist> artists = new ArrayList<>();
+        Uri uri = MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI;
+        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int column = cursor.getColumnCount();
+            Log.i(TAG, "queryGenre: start");
+            for (int i = 0; i < column; i++) {
+                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
+            }
+            Log.i(TAG, "queryGenre: end");
+            cursor.close();
+        }
+        return artists;
+    }
+
+    private static List<Artist> queryPlaylists() {
+        List<Artist> artists = new ArrayList<>();
+        Uri uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
+        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int column = cursor.getColumnCount();
+            Log.i(TAG, "Playlists: start");
+            for (int i = 0; i < column; i++) {
+                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
+            }
+            Log.i(TAG, "Playlists: end");
+            cursor.close();
+        }
+        return artists;
     }
 
 }
