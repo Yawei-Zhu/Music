@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.wind.music.activity.BillBoardActivity">
+    tools:context="com.wind.music.view.BillBoardActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"

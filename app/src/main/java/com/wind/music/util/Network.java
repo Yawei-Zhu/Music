@@ -77,7 +77,7 @@ public class Network {
             final String url,
             final NetworkListener listener) {
 
-        int type = getNetworkType(mContext);
+        int type = getNetworkType();
         if (type == 0) {
             listener.onRespond(CODE_NETWORK_UNAVAILABLE, MSG_NETWORK_UNAVAILABLE, "");
             return;
@@ -104,6 +104,9 @@ public class Network {
                     }
                 });
 
+        if (mQueue == null) {
+            throw new IllegalAccessError("Please call Network.init(Context) first!");
+        }
 
         mQueue.add(request);
     }
@@ -111,12 +114,16 @@ public class Network {
     /**
      * get the type of the current connecting network
      *
-     * @param context a context instance
      * @return 0 for no-network; 1 for mobile; 2 for wifi; 3 for other
      */
-    public static int getNetworkType(Context context) {
+    public static int getNetworkType() {
+
+        if (mContext == null) {
+            throw new IllegalAccessError("Please call Network.init(Context) first!");
+        }
+
         ConnectivityManager manager = (ConnectivityManager)
-                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo networkinfo = manager.getActiveNetworkInfo();
         if (networkinfo == null || !networkinfo.isAvailable()) return 0;
