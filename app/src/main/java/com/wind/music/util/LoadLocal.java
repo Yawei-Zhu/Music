@@ -8,10 +8,15 @@ import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.github.stuxuhai.jpinyin.PinyinException;
+import com.github.stuxuhai.jpinyin.PinyinFormat;
+import com.github.stuxuhai.jpinyin.PinyinHelper;
 import com.wind.music.bean.Artist;
 import com.wind.music.bean.Song;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -73,10 +78,26 @@ public class LoadLocal {
             song.album_art = query(resolver, song.album_id);
         }
         cursor.close();
-        queryArtist();
-        queryAlbum();
-        queryGenre();
-        queryPlaylists();
+        Collections.sort(data, new Comparator<Song>() {
+            @Override
+            public int compare(Song l, Song r) {
+                String lp = null;
+                try {
+                    lp = PinyinHelper.convertToPinyinString(l.title, ",", PinyinFormat.WITHOUT_TONE);
+                } catch (PinyinException e) {
+                    e.printStackTrace();
+                    lp = l.title;
+                }
+                String rp = null;
+                try {
+                    rp = PinyinHelper.convertToPinyinString(r.title, ",", PinyinFormat.WITHOUT_TONE);
+                } catch (PinyinException e) {
+                    e.printStackTrace();
+                    rp = r.title;
+                }
+                return lp.toLowerCase().compareTo(rp.toLowerCase());
+            }
+        });
         return data;
     }
 
