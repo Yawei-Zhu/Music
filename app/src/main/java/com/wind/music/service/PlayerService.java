@@ -10,6 +10,7 @@ import com.wind.music.Application;
 import com.wind.music.bean.Song;
 import com.wind.music.event.PlayActionEvent;
 import com.wind.music.event.PlayInfoEvent;
+import com.wind.music.util.PlayInfoSaver;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -29,15 +30,21 @@ public class PlayerService extends Service {
     public static final int MODE_SINGLE = 3;
 
     private List<Song> songs;
+    private PlayInfoSaver saver;
     private MediaPlayer player;
-    private int index = 0;
-    private int pausePosition = 0;
-    private int mode = 0;
+    private int index;
+    private int pausePosition;
+    private int mode;
 
     @Override
     public void onCreate() {
         EventBus.getDefault().register(this);
         songs = Application.getApp().getLocalSongs();
+
+        saver = new PlayInfoSaver(this);
+        mode = saver.readMode();
+        index = saver.readIndex();
+        pausePosition = saver.readPosition();
     }
 
     @Override
@@ -56,6 +63,23 @@ public class PlayerService extends Service {
     @Override
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
+
+        if (player != null) {
+            if (player.isPlaying()) {
+                pausePosition = player.getCurrentPosition();
+                player.stop();
+            }
+            player.release();
+            player = null;
+        }
+
+        if (saver != null) {
+            saver.saveMode(mode);
+            saver.saveIndex(index);
+            saver.savePosition(pausePosition);
+            saver.release();
+            saver = null;
+        }
     }
 
     @Nullable
@@ -75,10 +99,9 @@ public class PlayerService extends Service {
             case PlayActionEvent.WHAT_PLAY:
                 if (event.extra != null && event.extra instanceof Integer) {
                     pausePosition = 0;
-                    play((Integer) event.extra);
-                } else {
-                    play();
+                    index = (Integer) event.extra;
                 }
+                play();
                 break;
             case PlayActionEvent.WHAT_PAUSE:
                 pause();
@@ -138,7 +161,10 @@ public class PlayerService extends Service {
 
     private void pause() {
         if (player != null) {
-            pausePosition = player.getCurrentPosition();
+            pausePosition = player.getCurrentPosition() - 500;
+            if (pausePosition < 0)  {
+                pausePosition = 0;
+            }
             player.stop();
             EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_PLAYING, false));
         }

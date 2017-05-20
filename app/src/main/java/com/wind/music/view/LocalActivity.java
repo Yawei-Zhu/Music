@@ -2,9 +2,12 @@ package com.wind.music.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Process;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -58,6 +61,25 @@ public class LocalActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_local, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_close:
+                if (service != null) {
+                    stopService(service);
+                }
+                finish();
+                break;
+        }
+        return true;
     }
 
     /*
