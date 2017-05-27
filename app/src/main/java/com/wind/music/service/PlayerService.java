@@ -8,11 +8,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import com.wind.music.bean.Song;
-import com.wind.music.event.PlayInfoEvent;
 import com.wind.music.util.MusicPlayer;
 import com.wind.music.util.PlayInfoSaver;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 import java.util.Random;
@@ -45,14 +42,6 @@ public class PlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_MODE, mode));
-        EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_INDEX, index));
-        EventBus.getDefault().post(new PlayInfoEvent(
-                PlayInfoEvent.WHAT_SONG_PLAYING,
-                player != null && player.isPlaying()));
-        EventBus.getDefault().post(new PlayInfoEvent(
-                PlayInfoEvent.WHAT_SONG_POSITION,
-                player == null ? 0 : player.getCurrentPosition()));
         return START_NOT_STICKY;
     }
 
@@ -184,7 +173,6 @@ public class PlayerService extends Service {
                 e.printStackTrace();
             }
             player.prepareAsync();
-            EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_INDEX, index));
         }
     }
 
@@ -200,7 +188,6 @@ public class PlayerService extends Service {
                 pausePosition = 0;
             }
             player.stop();
-            EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_PLAYING, false));
         }
     }
 
@@ -250,7 +237,6 @@ public class PlayerService extends Service {
         if (mode > 3) {
             mode = 0;
         }
-        EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_MODE, mode));
         return mode;
     }
 
@@ -266,7 +252,6 @@ public class PlayerService extends Service {
         @Override
         public void onSeekComplete(MediaPlayer mp) {
             mp.start();
-            EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_PLAYING, true));
         }
     };
 
