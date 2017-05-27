@@ -1,7 +1,10 @@
 package com.wind.music.view;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Process;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,11 +19,11 @@ import com.wind.music.R;
 import com.wind.music.adapter.SongAdapter;
 import com.wind.music.bean.Song;
 import com.wind.music.decoration.DefaultDecoration;
+import com.wind.music.event.NoticeEvent;
 import com.wind.music.event.PlayActionEvent;
 import com.wind.music.event.PlayInfoEvent;
 import com.wind.music.service.PlayerService;
-import com.wind.music.util.LoadLocal;
-import com.wind.music.util.LoadLocalListener;
+import com.wind.music.util.MusicPlayer;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -39,8 +42,8 @@ public class LocalActivity extends BaseActivity {
 
     private List<Song> songs;
     private SongAdapter adapter;
-    private Intent service;
     private boolean isPlaying = false;
+    private MusicPlayer player;
 
     /*
      * activity lifecycle start
@@ -52,9 +55,18 @@ public class LocalActivity extends BaseActivity {
 
         EventBus.getDefault().register(this);
         initLayout();
-        loadData();
-        service = new Intent(this, PlayerService.class);
-        startService(service);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bindPlayer();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindPlayer();
     }
 
     @Override
@@ -73,10 +85,8 @@ public class LocalActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_close:
-                if (service != null) {
-                    stopService(service);
-                }
                 finish();
+                Process.killProcess(Process.myPid());
                 break;
         }
         return true;
@@ -92,76 +102,62 @@ public class LocalActivity extends BaseActivity {
      **********************************************************************************************/
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(PlayInfoEvent event) {
+    public void onEvent(NoticeEvent event) {
         if (event == null) {
             return;
         }
 
         switch (event.what) {
-            case PlayInfoEvent.WHAT_SONG_INDEX:
-                if (event.extra != null && event.extra instanceof Integer) {
-                    updateSongInfo((Integer) event.extra);
+            case NoticeEvent.WHAT_DATA_LOADED:
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
                 }
                 break;
-            case PlayInfoEvent.WHAT_SONG_PLAYING:
-                if (event.extra != null && event.extra instanceof Boolean) {
-                    updatePlaying((Boolean) event.extra);
-                }
-                break;
-            case PlayInfoEvent.WHAT_SONG_MODE:
-                if (event.extra != null && event.extra instanceof Integer) {
-                    updatePlayMode((Integer) event.extra);
-                }
-                break;
-            case PlayInfoEvent.WHAT_SONG_POSITION:
-            case PlayInfoEvent.WHAT_SONG_NONE:
-            default:
-                // do nothing
-                break;
         }
     }
-
-    private void updatePlayMode(Integer mode) {
-        String s = "";
-        switch (mode) {
-            case PlayerService.MODE_CYCLE:
-                s = "循环";
-                break;
-            case PlayerService.MODE_ORDER:
-                s = "顺序";
-                break;
-            case PlayerService.MODE_RANDOM:
-                s = "随机";
-                break;
-            case PlayerService.MODE_SINGLE:
-                s = "单曲";
-                break;
-        }
-
-        if (tvMode != null) {
-            tvMode.setText(s);
-        }
-    }
-
-    private void updateSongInfo(int index) {
-        if (songs.size() > index && index >= 0) {
-            Song song = songs.get(index);
-            if (tvTitle != null) {
-                tvTitle.setText(song.title);
-            }
-        }
-    }
-
-    private void updatePlaying(boolean playing) {
-        isPlaying = playing;
-        if (tvPlay != null) {
-            tvPlay.setText(playing ? "暂停" : "播放");
-        }
-    }
-
 
     /*
-     * eventbus callback start
+     * eventbus callback end
+     **********************************************************************************************/
+
+    /*
+     * player start
+     **********************************************************************************************/
+
+    private PlayerConnection playerConnection;
+
+    private void bindPlayer() {
+        Intent service = new Intent(this, PlayerService.class);
+        playerConnection = new PlayerConnection();
+        int flags = BIND_AUTO_CREATE;
+        bindService(service, playerConnection, flags);
+    }
+
+    private void unbindPlayer() {
+        if (playerConnection != null) {
+            unbindService(playerConnection);
+        }
+        player = null;
+        playerConnection = null;
+    }
+
+    private class PlayerConnection implements ServiceConnection {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            if (service instanceof MusicPlayer) {
+                player = (MusicPlayer) service;
+                player.setData(songs);
+                updatePlaying(player.isPlaying());
+                updateMode(player.getPlayMode());
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    }
+    /*
+     * player end
      **********************************************************************************************/
 
     private void initLayout() {
@@ -196,43 +192,70 @@ public class LocalActivity extends BaseActivity {
         }
     }
 
-    private void loadData() {
-        LoadLocal.loadSongs(new LoadLocalListener<List<Song>>() {
-            @Override
-            public void onRespond(List<Song> data) {
-                songs.clear();
-                songs.addAll(data);
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
-            }
-        });
-    }
-
     private final View.OnClickListener switchPlayModeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            EventBus.getDefault().post(new PlayActionEvent(PlayActionEvent.WHAT_MODE));
+            if (player != null) {
+                int mode = player.changePlayMode();
+                updateMode(mode);
+            }
         }
     };
 
     private final View.OnClickListener pauseListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            PlayActionEvent event = new PlayActionEvent();
-            if (isPlaying) {
-                event.what = PlayActionEvent.WHAT_PAUSE;
-            } else {
-                event.what = PlayActionEvent.WHAT_PLAY;
+            if (player != null) {
+                if (player.isPlaying()) {
+                    player.pause();
+                    updatePlaying(false);
+                } else {
+                    player.play();
+                    updatePlaying(true);
+                }
             }
-            EventBus.getDefault().post(event);
         }
     };
 
     private final SongAdapter.OnItemClickListener selectSongListener = new SongAdapter.OnItemClickListener() {
         @Override
         public void onItemClick(Song item, int position) {
-            EventBus.getDefault().post(new PlayActionEvent(PlayActionEvent.WHAT_PLAY, position));
+            if (player != null) {
+                player.play(position);
+                updatePlaying(true);
+            }
         }
     };
+
+    private void updatePlaying(boolean isPlaying) {
+        if (tvPlay != null) {
+            if (isPlaying) {
+                tvPlay.setText("暂停");
+            } else {
+                tvPlay.setText("播放");
+            }
+        }
+    }
+
+    private void updateMode(int mode) {
+        String s = "";
+        switch (mode) {
+            case PlayerService.MODE_CYCLE:
+                s = "循环";
+                break;
+            case PlayerService.MODE_ORDER:
+                s = "顺序";
+                break;
+            case PlayerService.MODE_RANDOM:
+                s = "随机";
+                break;
+            case PlayerService.MODE_SINGLE:
+                s = "单曲";
+                break;
+        }
+
+        if (tvMode != null) {
+            tvMode.setText(s);
+        }
+    }
 }

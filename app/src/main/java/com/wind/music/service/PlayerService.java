@@ -3,18 +3,16 @@ package com.wind.music.service;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.wind.music.Application;
 import com.wind.music.bean.Song;
-import com.wind.music.event.PlayActionEvent;
 import com.wind.music.event.PlayInfoEvent;
+import com.wind.music.util.MusicPlayer;
 import com.wind.music.util.PlayInfoSaver;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 import java.util.Random;
@@ -38,8 +36,6 @@ public class PlayerService extends Service {
 
     @Override
     public void onCreate() {
-        EventBus.getDefault().register(this);
-        songs = Application.getApp().getLocalSongs();
 
         saver = new PlayInfoSaver(this);
         mode = saver.readMode();
@@ -62,7 +58,6 @@ public class PlayerService extends Service {
 
     @Override
     public void onDestroy() {
-        EventBus.getDefault().unregister(this);
 
         if (player != null) {
             if (player.isPlaying()) {
@@ -85,47 +80,85 @@ public class PlayerService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        // do nothing
-        return null;
+        IBinder binder = new PlayerBinder();
+        return binder;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(PlayActionEvent event) {
-        if (event == null) {
-            return;
+    @Override
+    public boolean onUnbind(Intent intent) {
+        return super.onUnbind(intent);
+    }
+
+    private class PlayerBinder extends Binder implements MusicPlayer {
+
+        @Override
+        public void setData(List<Song> data) {
+            songs = data;
         }
 
-        switch (event.what) {
-            case PlayActionEvent.WHAT_PLAY:
-                if (event.extra != null && event.extra instanceof Integer) {
-                    pausePosition = 0;
-                    index = (Integer) event.extra;
-                }
-                play();
-                break;
-            case PlayActionEvent.WHAT_PAUSE:
-                pause();
-                break;
-            case PlayActionEvent.WHAT_PREVIOUS:
-                previous();
-                break;
-            case PlayActionEvent.WHAT_NEXT:
-                next();
-                break;
-            case PlayActionEvent.WHAT_SEEK:
-                if (event.extra != null && event.extra instanceof Integer) {
-                    seekTo((Integer) event.extra);
-                } else {
-                    seekTo(0);
-                }
-                break;
-            case PlayActionEvent.WHAT_MODE:
-                changeMode();
-                break;
-            case PlayActionEvent.WHAT_NONE:
-            default:
-                // do nothing
-                break;
+        @Override
+        public void play() {
+            PlayerService.this.play();
+        }
+
+        @Override
+        public void play(int index) {
+            PlayerService.this.play(index);
+        }
+
+        @Override
+        public void pause() {
+            PlayerService.this.pause();
+        }
+
+        @Override
+        public boolean isPlaying() {
+            return player != null && player.isPlaying();
+        }
+
+        @Override
+        public int whatIsPlaying() {
+            return index;
+        }
+
+        @Override
+        public int currentPosition() {
+            return  player == null ? 0 : player.getCurrentPosition();
+        }
+
+        @Override
+        public void seekTo(int position) {
+            PlayerService.this.seekTo(position);
+        }
+
+        @Override
+        public void previous() {
+            PlayerService.this.previous();
+        }
+
+        @Override
+        public void next() {
+            PlayerService.this.next();
+        }
+
+        @Override
+        public int changePlayMode() {
+            return PlayerService.this.changeMode();
+        }
+
+        @Override
+        public int getPlayMode() {
+            return mode;
+        }
+
+        @Override
+        public void registerPlayInfoListener(PlayInfoListener listener) {
+
+        }
+
+        @Override
+        public void unregisterPlayInfoListener(PlayInfoListener listener) {
+
         }
     }
 
@@ -138,10 +171,6 @@ public class PlayerService extends Service {
     }
 
     private void play() {
-        play(index);
-    }
-
-    private void play(int index) {
         if (songs != null && songs.size() > index && index >= 0) {
             Song song = songs.get(index);
 
@@ -159,6 +188,11 @@ public class PlayerService extends Service {
         }
     }
 
+    private void play(int index) {
+        this.index = index;
+        play();
+    }
+
     private void pause() {
         if (player != null) {
             pausePosition = player.getCurrentPosition() - 500;
@@ -171,6 +205,15 @@ public class PlayerService extends Service {
     }
 
     private void previous() {
+        index--;
+        if (index < 0) {
+            index = songs.size() - 1;
+        }
+        play(index);
+    }
+
+
+    private void next() {
         switch (mode) {
             case MODE_CYCLE:
                 index++;
@@ -196,27 +239,19 @@ public class PlayerService extends Service {
         }
     }
 
-
-    private void next() {
-        index--;
-        if (index < 0) {
-            index = songs.size() - 1;
-        }
-        play(index);
-    }
-
     private void seekTo(int position) {
         if (player != null) {
             player.seekTo(position);
         }
     }
 
-    private void changeMode() {
+    private int changeMode() {
         mode++;
         if (mode > 3) {
             mode = 0;
         }
         EventBus.getDefault().post(new PlayInfoEvent(PlayInfoEvent.WHAT_SONG_MODE, mode));
+        return mode;
     }
 
     private final MediaPlayer.OnPreparedListener onPreparedListener = new MediaPlayer.OnPreparedListener() {
@@ -238,7 +273,7 @@ public class PlayerService extends Service {
     private final MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mp) {
-            previous();
+            next();
         }
     };
 
