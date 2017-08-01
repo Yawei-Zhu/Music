@@ -4,83 +4,94 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_grey_light"
     android:orientation="vertical"
     tools:context="com.wind.music.view.LocalActivity">
 
-    <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/activity_local"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@android:color/white"
-        android:orientation="vertical">
-
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/appbar_padding_top"
-            android:theme="@style/AppTheme.AppBarOverlay">
-
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                app:layout_scrollFlags="scroll|enterAlways"
-                app:popupTheme="@style/AppTheme.PopupOverlay" />
-        </android.support.design.widget.AppBarLayout>
+        android:layout_weight="1">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-    </android.support.design.widget.CoordinatorLayout>
+            android:layout_height="match_parent" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
-    <LinearLayout
-        android:id="@+id/ll_controller"
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
-        android:background="@android:color/white"
-        android:orientation="horizontal">
+        app:cardElevation="10dp">
 
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/cv_controller"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/margin_l"
-            android:layout_weight="1"
-            android:maxLines="1"
-            android:textColor="@color/text_grey_hard"
-            android:textSize="@dimen/text_l" />
+            android:orientation="vertical"
+            android:padding="@dimen/margin_m">
 
-        <TextView
-            android:id="@+id/tv_mode"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/button_size"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:paddingLeft="@dimen/margin_l"
-            android:paddingRight="@dimen/margin_l"
-            android:text="循环"
-            android:textColor="@drawable/selector_textcolor_black"
-            android:textSize="@dimen/text_l" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_play"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/button_size"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:paddingLeft="@dimen/margin_l"
-            android:paddingRight="@dimen/margin_l"
-            android:text="播放"
-            android:textColor="@drawable/selector_textcolor_black"
-            android:textSize="@dimen/text_l" />
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/tv_current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00" />
+
+                <SeekBar
+                    android:id="@+id/sb_progress"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tv_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_s"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:textSize="@dimen/text_l" />
+
+                <Button
+                    android:id="@+id/bt_mode"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="80dp"
+                    android:layout_height="@dimen/button_size"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="@string/musicplayer_mode_cycle"
+                    android:textSize="@dimen/text_l" />
+
+                <Button
+                    android:id="@+id/bt_play"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="80dp"
+                    android:layout_height="@dimen/button_size"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="@string/musicplayer_play"
+                    android:textSize="@dimen/text_l" />
+            </LinearLayout>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
 </LinearLayout>

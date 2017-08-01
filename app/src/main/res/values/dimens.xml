@@ -21,5 +21,6 @@
     <dimen name="text_xs">10sp</dimen>
     <dimen name="text_xxs">8sp</dimen>
 
-    <dimen name="button_size">44dp</dimen>
+    <dimen name="button_size">40dp</dimen>
+    <dimen name="button_size_small">20dp</dimen>
 </resources>

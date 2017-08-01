@@ -4,13 +4,16 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.Nullable;
 
 import com.wind.music.bean.Song;
 import com.wind.music.util.MusicPlayer;
 import com.wind.music.util.PlayInfoSaver;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -27,9 +30,10 @@ public class PlayerService extends Service {
     private List<Song> songs;
     private PlayInfoSaver saver;
     private MediaPlayer player;
-    private int index;
+    private int index = -1;
     private int pausePosition;
     private int mode;
+    private final HashSet<MusicPlayer.OnPlayInfoListener> listenerSet = new HashSet<>();
 
     @Override
     public void onCreate() {
@@ -69,8 +73,7 @@ public class PlayerService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        IBinder binder = new PlayerBinder();
-        return binder;
+        return new PlayerBinder();
     }
 
     @Override
@@ -111,8 +114,15 @@ public class PlayerService extends Service {
         }
 
         @Override
-        public int currentPosition() {
-            return  player == null ? 0 : player.getCurrentPosition();
+        public int getCurrentPosition() {
+            int position = player == null ? 0 : player.getCurrentPosition();
+            return position < 0 ? 0 : position;
+        }
+
+        @Override
+        public int getDuration() {
+            int duration = player == null ? 0 : player.getDuration();
+            return duration < 0 ? 0 : duration;
         }
 
         @Override
@@ -141,13 +151,22 @@ public class PlayerService extends Service {
         }
 
         @Override
-        public void registerPlayInfoListener(PlayInfoListener listener) {
-
+        public void registerOnPlayInfoListener(OnPlayInfoListener listener) {
+            if (listener != null) {
+                synchronized (listenerSet) {
+                    listenerSet.add(listener);
+                    listenerSet.notifyAll();
+                }
+            }
         }
 
         @Override
-        public void unregisterPlayInfoListener(PlayInfoListener listener) {
-
+        public void unregisterOnPlayInfoListener(OnPlayInfoListener listener) {
+            if (listener != null) {
+                synchronized (listenerSet) {
+                    listenerSet.remove(listener);
+                }
+            }
         }
     }
 
@@ -157,6 +176,7 @@ public class PlayerService extends Service {
         player.setOnSeekCompleteListener(onSeekCompleteListener);
         player.setOnCompletionListener(onCompletionListener);
         player.setOnErrorListener(onErrorListener);
+        player.setOnInfoListener(onInfoListener);
     }
 
     private void play() {
@@ -178,20 +198,33 @@ public class PlayerService extends Service {
 
     private void play(int index) {
         this.index = index;
+        if (saver != null) {
+            saver.saveIndex(index);
+        }
+        pausePosition = 0;
         play();
     }
 
     private void pause() {
         if (player != null) {
             pausePosition = player.getCurrentPosition() - 500;
-            if (pausePosition < 0)  {
+            if (pausePosition < 0) {
                 pausePosition = 0;
             }
             player.stop();
+            synchronized (listenerSet) {
+                updatePlayInfoThread.run = false;
+                listenerSet.notifyAll();
+                updatePlayInfoThread = null;
+            }
+            if (saver != null) {
+                saver.savePosition(pausePosition);
+            }
         }
     }
 
     private void previous() {
+        int index = this.index;
         index--;
         if (index < 0) {
             index = songs.size() - 1;
@@ -201,6 +234,7 @@ public class PlayerService extends Service {
 
 
     private void next() {
+        int index = this.index;
         switch (mode) {
             case MODE_CYCLE:
                 index++;
@@ -237,6 +271,9 @@ public class PlayerService extends Service {
         if (mode > 3) {
             mode = 0;
         }
+        if (saver != null) {
+            saver.saveMode(mode);
+        }
         return mode;
     }
 
@@ -245,6 +282,11 @@ public class PlayerService extends Service {
         public void onPrepared(MediaPlayer mp) {
             mp.seekTo(pausePosition);
             pausePosition = 0;
+
+            if (updatePlayInfoThread == null) {
+                updatePlayInfoThread = new UpdatePlayInfoThread();
+                updatePlayInfoThread.start();
+            }
         }
     };
 
@@ -288,5 +330,56 @@ public class PlayerService extends Service {
             return true;
         }
     };
+
+    private final MediaPlayer.OnInfoListener onInfoListener = new MediaPlayer.OnInfoListener() {
+        @Override
+        public boolean onInfo(MediaPlayer mp, int what, int extra) {
+            return true;
+        }
+    };
+
+
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            synchronized (listenerSet) {
+                for (MusicPlayer.OnPlayInfoListener l : listenerSet) {
+                    l.onPlayInfo(msg.arg1, msg.arg2);
+                }
+            }
+        }
+    };
+    private UpdatePlayInfoThread updatePlayInfoThread;
+
+    private class UpdatePlayInfoThread extends Thread {
+        public volatile boolean run = true;
+
+        @Override
+        public void run() {
+            while (run) {
+                synchronized (listenerSet) {
+                    if (listenerSet.isEmpty()) {
+                        try {
+                            listenerSet.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        if (player != null) {
+                            handler.obtainMessage(1, index, player.getCurrentPosition()).sendToTarget();
+                        } else {
+                            run = false;
+                        }
+                    }
+                }
+
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
 }
