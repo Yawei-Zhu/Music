@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="musicplayer_play">Play</string>
+    <string name="musicplayer_pause">Pause</string>
+
+    <string name="musicplayer_mode_cycle">Cycle</string>
+    <string name="musicplayer_mode_order">Order</string>
+    <string name="musicplayer_mode_random">Rand</string>
+    <string name="musicplayer_mode_single">Single</string>
+
+</resources>

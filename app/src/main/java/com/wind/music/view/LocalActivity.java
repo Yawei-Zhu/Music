@@ -1,49 +1,53 @@
 package com.wind.music.view;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
+import android.support.v4.content.PermissionChecker;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.wind.music.Application;
 import com.wind.music.R;
-import com.wind.music.adapter.SongAdapter;
+import com.wind.music.adapter.SongRecyclerAdapter;
 import com.wind.music.bean.Song;
 import com.wind.music.decoration.DefaultDecoration;
-import com.wind.music.event.NoticeEvent;
-import com.wind.music.event.PlayActionEvent;
-import com.wind.music.event.PlayInfoEvent;
 import com.wind.music.service.PlayerService;
+import com.wind.music.util.LoadLocal;
+import com.wind.music.util.LoadLocalListener;
 import com.wind.music.util.MusicPlayer;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class LocalActivity extends BaseActivity {
-    private static final String TAG = LocalActivity.class.getSimpleName();
+    private final String TAG = getClass().getSimpleName();
 
-
-    private RecyclerView recyclerView;
-    private TextView tvPlay;
-    private TextView tvMode;
+    private SwipeRefreshLayout srLayout;
+    private TextView tvCurrent;
+    private TextView tvDuration;
+    private SeekBar sbProgress;
+    private Button btPlay;
+    private Button btMode;
     private TextView tvTitle;
 
     private List<Song> songs;
-    private SongAdapter adapter;
-    private boolean isPlaying = false;
+    private SongRecyclerAdapter adapter;
     private MusicPlayer player;
+    private boolean isProgressTrackingTouch = false;
 
     /*
      * activity lifecycle start
@@ -53,8 +57,8 @@ public class LocalActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_local);
 
-        EventBus.getDefault().register(this);
         initLayout();
+        loadData();
     }
 
     @Override
@@ -72,7 +76,6 @@ public class LocalActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -94,30 +97,6 @@ public class LocalActivity extends BaseActivity {
 
     /*
      * activity lifecycle end
-     **********************************************************************************************/
-
-
-    /*
-     * eventbus callback start
-     **********************************************************************************************/
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(NoticeEvent event) {
-        if (event == null) {
-            return;
-        }
-
-        switch (event.what) {
-            case NoticeEvent.WHAT_DATA_LOADED:
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
-                break;
-        }
-    }
-
-    /*
-     * eventbus callback end
      **********************************************************************************************/
 
     /*
@@ -147,6 +126,7 @@ public class LocalActivity extends BaseActivity {
             if (service instanceof MusicPlayer) {
                 player = (MusicPlayer) service;
                 player.setData(songs);
+                player.registerOnPlayInfoListener(onPlayInfoListener);
                 updatePlaying(player.isPlaying());
                 updateMode(player.getPlayMode());
             }
@@ -166,21 +146,40 @@ public class LocalActivity extends BaseActivity {
             setSupportActionBar(toolbar);
         }
 
-        tvMode = (TextView) findViewById(R.id.tv_mode);
-        if (tvMode != null) {
-            tvMode.setOnClickListener(switchPlayModeListener);
+        sbProgress = (SeekBar) findViewById(R.id.sb_progress);
+        if (sbProgress != null) {
+            sbProgress.setOnSeekBarChangeListener(onSeekBarChangeListener);
+        }
+
+        tvCurrent = (TextView) findViewById(R.id.tv_current);
+        tvDuration = (TextView) findViewById(R.id.tv_duration);
+        Drawable d;
+
+        btMode = (Button) findViewById(R.id.bt_mode);
+        if (btMode != null) {
+            btMode.setOnClickListener(switchPlayModeListener);
         }
 
         tvTitle = (TextView) findViewById(R.id.tv_title);
 
-        tvPlay = (TextView) findViewById(R.id.tv_play);
-        if (tvPlay != null) {
-            tvPlay.setOnClickListener(pauseListener);
+        btPlay = (Button) findViewById(R.id.bt_play);
+        if (btPlay != null) {
+            btPlay.setOnClickListener(pauseListener);
         }
 
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        songs = Application.getApp().getLocalSongs();
-        adapter = new SongAdapter(LocalActivity.this, songs);
+        srLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+        if (srLayout != null) {
+            srLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    loadData();
+                }
+            });
+        }
+
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        songs = new ArrayList<>();
+        adapter = new SongRecyclerAdapter(LocalActivity.this, songs);
         adapter.setOnItemClickListener(selectSongListener);
 
         if (recyclerView != null) {
@@ -190,6 +189,37 @@ public class LocalActivity extends BaseActivity {
             recyclerView.addItemDecoration(new DefaultDecoration());
             recyclerView.setAdapter(adapter);
         }
+    }
+
+    private void loadData() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+            if (checkSelfPermission(permission) == PermissionChecker.PERMISSION_GRANTED) {
+                _LoadData();
+            } else {
+                requestPermissions(new String[]{permission}, 1);
+            }
+        } else {
+            _LoadData();
+        }
+    }
+
+    private void _LoadData() {
+        LoadLocal.loadSongs(new LoadLocalListener<List<Song>>() {
+            @Override
+            public void onRespond(List<Song> data) {
+                if (songs != null) {
+                    songs.clear();
+                    songs.addAll(data);
+                    if (adapter != null) {
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+                if (srLayout != null) {
+                    srLayout.setRefreshing(false);
+                }
+            }
+        });
     }
 
     private final View.OnClickListener switchPlayModeListener = new View.OnClickListener() {
@@ -217,45 +247,131 @@ public class LocalActivity extends BaseActivity {
         }
     };
 
-    private final SongAdapter.OnItemClickListener selectSongListener = new SongAdapter.OnItemClickListener() {
+    private final SongRecyclerAdapter.OnItemClickListener selectSongListener =
+            new SongRecyclerAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(Song item, int position) {
+                    if (player != null) {
+                        if (player.isPlaying()) {
+                            if (player.whatIsPlaying() == position) {
+                                player.pause();
+                                updatePlaying(false);
+                            } else {
+                                player.play(position);
+                            }
+                        } else {
+                            if (player.whatIsPlaying() == position) {
+                                player.play();
+                            } else {
+                                player.play(position);
+                            }
+                            updatePlaying(true);
+                        }
+                    }
+                }
+            };
+
+    private final MusicPlayer.OnPlayInfoListener onPlayInfoListener = new MusicPlayer.OnPlayInfoListener() {
+        int oldIndex = -1;
+
         @Override
-        public void onItemClick(Song item, int position) {
+        public void onPlayInfo(int index, int position) {
+            if (oldIndex != index) {
+                updateIndex(oldIndex = index);
+            }
+            updateDuration(player == null ? 0 : player.getDuration());
+            updatePosition(position);
+        }
+    };
+
+    private final SeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (tvCurrent != null) {
+                tvCurrent.setText(time2String(progress));
+            }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            isProgressTrackingTouch = true;
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            isProgressTrackingTouch = false;
             if (player != null) {
-                player.play(position);
-                updatePlaying(true);
+                player.seekTo(seekBar.getProgress());
             }
         }
     };
 
     private void updatePlaying(boolean isPlaying) {
-        if (tvPlay != null) {
+        if (btPlay != null) {
             if (isPlaying) {
-                tvPlay.setText("暂停");
+                btPlay.setText(R.string.musicplayer_pause);
             } else {
-                tvPlay.setText("播放");
+                btPlay.setText(R.string.musicplayer_play);
             }
         }
     }
 
     private void updateMode(int mode) {
-        String s = "";
+        int s = 0;
         switch (mode) {
             case PlayerService.MODE_CYCLE:
-                s = "循环";
+                s = R.string.musicplayer_mode_cycle;
                 break;
             case PlayerService.MODE_ORDER:
-                s = "顺序";
+                s = R.string.musicplayer_mode_order;
                 break;
             case PlayerService.MODE_RANDOM:
-                s = "随机";
+                s = R.string.musicplayer_mode_random;
                 break;
             case PlayerService.MODE_SINGLE:
-                s = "单曲";
+                s = R.string.musicplayer_mode_single;
                 break;
         }
 
-        if (tvMode != null) {
-            tvMode.setText(s);
+        if (btMode != null && s != 0) {
+            btMode.setText(s);
+        }
+    }
+
+    private void updateIndex(int index) {
+        if (index >= 0 && songs != null && songs.size() > index) {
+            if (tvTitle != null) {
+                tvTitle.setText(songs.get(index).title);
+            }
+        }
+    }
+
+    private String time2String(int time) {
+        String s;
+        int totalSecond = time / 1000;
+        int second = totalSecond % 60;
+        int minute = totalSecond / 60 % 60;
+        int hour = totalSecond / 3600;
+        if (hour == 0) {
+            s = String.format("%02d:%02d", minute, second);
+        } else {
+            s = String.format("%d:%02d:%02d", hour, minute, second);
+        }
+        return s;
+    }
+
+    private void updateDuration(int duration) {
+        if (sbProgress != null) {
+            sbProgress.setMax(duration);
+        }
+        if (tvDuration != null) {
+            tvDuration.setText(time2String(duration));
+        }
+    }
+
+    private void updatePosition(int position) {
+        if (sbProgress != null) {
+            sbProgress.setProgress(position);
         }
     }
 }

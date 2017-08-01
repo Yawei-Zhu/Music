@@ -3,7 +3,6 @@ package com.wind.music.adapter;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,21 +11,16 @@ import java.util.List;
  * Created by Administrator on 2017/4/24.
  */
 
-public abstract class BaseAdapter<E> extends RecyclerView.Adapter<BaseAdapter.ViewHolder<E>> {
+public abstract class RecyclerAdapter<E> extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder<E>> {
 
-    private Context mContext;
+    private final Class<? extends ViewHolder> vhc;
+    private final Context mContext;
     private List<E> mData;
 
-    public BaseAdapter(Context context, List<E> data) {
-        setContext(context);
-        setData(data);
-    }
-
-    public void setContext(Context context) {
-        if (context == null) {
-            throw new IllegalAccessError("context == null");
-        }
+    public RecyclerAdapter(Context context, List<E> data, Class<? extends RecyclerAdapter.ViewHolder> vhc) {
         this.mContext = context;
+        this.vhc = vhc;
+        setData(data);
     }
 
     public Context getContext() {
@@ -69,6 +63,6 @@ public abstract class BaseAdapter<E> extends RecyclerView.Adapter<BaseAdapter.Vi
     }
 
     public interface OnItemClickListener<E> {
-        public void onItemClick(BaseAdapter parent, ViewHolder holder, E item, int position);
+        public void onItemClick(RecyclerAdapter parent, ViewHolder holder, E item, int position);
     }
 }

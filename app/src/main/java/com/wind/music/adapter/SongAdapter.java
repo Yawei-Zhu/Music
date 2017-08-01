@@ -3,6 +3,7 @@ package com.wind.music.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
 import com.wind.music.R;
 import com.wind.music.bean.Song;
 
@@ -32,7 +35,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     public void setContext(Context context) {
         if (context == null) {
-            throw new IllegalAccessError("context == null");
+            throw new IllegalAccessError("context is null");
         }
         this.mContext = context;
     }
@@ -66,7 +69,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Song song = getData().get(position);
-        holder.bindData(song, position);
+        holder.tvTitle.setText(song.title);
+        holder.tvName.setText(song.artist);
+        holder.tvAlbum.setText(song.album);
+        holder.ivPic.setImageURI(Uri.parse(song.album_art));
     }
 
     @Override
@@ -79,8 +85,8 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         ImageView ivPic;
         TextView tvTitle;
         TextView tvName;
+        TextView tvAlbum;
         Song song;
-        int position;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -88,10 +94,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             ivPic = (ImageView) itemView.findViewById(R.id.iv_pic);
             tvTitle = (TextView) itemView.findViewById(R.id.tv_title);
             tvName = (TextView) itemView.findViewById(R.id.tv_name);
+            tvAlbum = (TextView) itemView.findViewById(R.id.tv_album);
         }
 
         public void bindData(Song song, int position) {
-            this.position = position;
             this.song = song;
             tvTitle.setText(song.title);
             tvName.setText(song.artist);
@@ -110,8 +116,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
                     BitmapFactory.decodeFile(params[0], options);
                     int h = options.outHeight;
                     int w = options.outWidth;
-                    int multipe = Math.min(h / 200, w / 200);
-                    options.inSampleSize = multipe;
+                    options.inSampleSize = Math.min(h / 200, w / 200);
                     options.inJustDecodeBounds = false;
                     return BitmapFactory.decodeFile(params[0], options);
                 }
@@ -129,7 +134,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         public void onClick(View v) {
             ViewHolder holder = (ViewHolder) v.getTag();
             if (holder != null && mOnItemClickListener != null) {
-                mOnItemClickListener.onItemClick(holder.song, holder.position);
+                mOnItemClickListener.onItemClick(holder.song, holder.getAdapterPosition());
             }
         }
     };

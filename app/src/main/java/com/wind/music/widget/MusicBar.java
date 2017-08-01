@@ -19,7 +19,7 @@ public class MusicBar extends FrameLayout {
     private ImageView mMusicBarPlay;
     private TextView mMusicBarTitle;
     private TextView mMusicBarName;
-    private ImageView mMusicBarPic;
+    private ImageView mMusicBarPicture;
     private MediaPlayer mPlayer;
 
     public MusicBar(Context context) {
@@ -43,7 +43,7 @@ public class MusicBar extends FrameLayout {
         mMusicBarPlay = (ImageView) findViewById(R.id.musicbar_play);
         mMusicBarTitle = (TextView) findViewById(R.id.musicbar_title);
         mMusicBarName = (TextView) findViewById(R.id.musicbar_name);
-        mMusicBarPic = (ImageView) findViewById(R.id.musicbar_pic);
+        mMusicBarPicture = (ImageView) findViewById(R.id.musicbar_picture);
 
         mMusicBarPlay.setOnClickListener(new OnClickListener() {
             @Override

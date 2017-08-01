@@ -15,17 +15,18 @@ public interface MusicPlayer {
     void pause();
     boolean isPlaying();
     int whatIsPlaying();
-    int currentPosition();
+    int getCurrentPosition();
+    int getDuration();
     void seekTo(int position);
     void previous();
     void next();
     int changePlayMode();
     int getPlayMode();
-    void registerPlayInfoListener(PlayInfoListener listener);
-    void unregisterPlayInfoListener(PlayInfoListener listener);
+    void registerOnPlayInfoListener(OnPlayInfoListener listener);
+    void unregisterOnPlayInfoListener(OnPlayInfoListener listener);
 
-    public interface PlayInfoListener {
-        void playInfo(int index, int position);
+    public interface OnPlayInfoListener {
+        void onPlayInfo(int index, int position);
     }
 
 }

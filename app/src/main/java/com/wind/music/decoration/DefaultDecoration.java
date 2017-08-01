@@ -16,7 +16,7 @@ public class DefaultDecoration extends RecyclerView.ItemDecoration {
     private Paint paint = new Paint();
 
     public DefaultDecoration() {
-        paint.setColor(Color.BLACK);
+        paint.setColor(Color.GRAY);
     }
 
     @Override
@@ -37,6 +37,10 @@ public class DefaultDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-        outRect.bottom = dividerHeight;
+        if (parent.indexOfChild(view) == parent.getChildCount() - 1) {
+            outRect.bottom = 0;
+        } else {
+            outRect.bottom = dividerHeight;
+        }
     }
 }

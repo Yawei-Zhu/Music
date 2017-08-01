@@ -30,7 +30,7 @@ public class JSONParser {
             song.publishtime = sObj.getString("publishtime");
             song.album_no = sObj.getLong("album_no");
             song.lrclink = sObj.getString("lrclink");
-            song.file_duration = sObj.getInt("duration");
+            song.file_duration = sObj.getInt("getDuration");
             song.song_id = sObj.getLong("_id");
             song.title = sObj.getString("title");
             song.artist_name = sObj.getString("artist");
