@@ -10,14 +10,24 @@ import android.view.View;
 
 import com.wind.music.adapter.SongAdapter;
 import com.wind.music.bean.BillBoard;
+import com.wind.music.bean.NetworkSong;
 import com.wind.music.decoration.DefaultDecoration;
 import com.wind.music.util.JSONParser;
 import com.wind.music.util.Loader;
 import com.wind.music.util.Network;
+import com.wind.music.util.Network2;
 import com.wind.music.util.NetworkListener;
 import com.wind.music.util.Toasts;
+import com.wind.music.util.Urls;
 
 import org.json.JSONException;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * Created by Administrator on 2017/5/8.
@@ -74,22 +84,16 @@ public abstract class BaseSongFragment extends ListFragment {
     @Override
     public void refresh() {
         getRefreshLayout().setRefreshing(true);
-        Loader.loadBillBoard(getType(), 0, new NetworkListener() {
+        Network2 net = new Retrofit.Builder().baseUrl(Urls.URL).build().create(Network2.class);
+        net.listSong(Urls.FORMAT_JSON, Urls.METHOD_BILL, getType(), 10, 0, new Callback<List<NetworkSong>>() {
             @Override
-            public void onRespond(int code, String msg, String response) {
-                getRefreshLayout().setRefreshing(false);
-                billBoard.songs.clear();
-                if (code == Network.CODE_SUCCESS) {
-                    try {
-                        JSONParser.parseBillBoard(billBoard, response);
-                        adapter.notifyDataSetChanged();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Toasts.show(getContext(), Network.MSG_PARSE_FAIL);
-                    }
-                } else {
-                    Toasts.show(getContext(), msg);
-                }
+            public void onResponse(Call<List<NetworkSong>> call, Response<List<NetworkSong>> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<List<NetworkSong>> call, Throwable t) {
+
             }
         });
     }

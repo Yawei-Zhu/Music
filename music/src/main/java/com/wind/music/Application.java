@@ -13,23 +13,25 @@ import com.wind.music.util.Network;
 public class Application extends android.app.Application {
 
     private static Application app;
-    private Intent playerService;
 
     @Override
     public void onCreate() {
+        super.onCreate();
         app = this;
         Network.init(this);
         LoadLocal.init(this);
-        playerService = new Intent(this, PlayerService.class);
+        Intent playerService = new Intent(this, PlayerService.class);
         startService(playerService);
     }
 
     @Override
     public void onTerminate() {
+        Intent playerService = new Intent(this, PlayerService.class);
         stopService(playerService);
         Network.release();
         LoadLocal.release();
         app = null;
+        super.onTerminate();
     }
 
     public static Application getApp() {

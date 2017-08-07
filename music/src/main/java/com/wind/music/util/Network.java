@@ -12,6 +12,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.wind.music.Application;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,7 +45,7 @@ public class Network {
 
 
     /**
-     * init network in Application.onCreate().
+     * init network in {@link Application#onCreate()}  Application.onCreate()}.
      *
      * @param context a instance of Application
      */
@@ -55,7 +56,7 @@ public class Network {
 
 
     /**
-     * release network in Application.onTerminate().
+     * release network in {@link Application#onTerminate() Application.onTerminate()}.
      */
     public static void release() {
         mContext = null;

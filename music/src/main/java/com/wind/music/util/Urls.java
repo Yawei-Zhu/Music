@@ -5,18 +5,18 @@ package com.wind.music.util;
  */
 
 public class Urls {
-    private static final String URL = "http://tingapi.ting.baidu.com/v1/restserver/ting";
-    private static final String FORMAT = "format";
+    public static final String URL = "http://tingapi.ting.baidu.com/v1/restserver/ting";
+    public static final String FORMAT = "format";
     public static final String FORMAT_JSON = "json";
     public static final String FORMAT_XML = "xml";
 
-    private static final String METHOD = "method";
+    public static final String METHOD = "method";
     public static final String METHOD_BILL = "baidu.ting.billboard.billList";
 
-    private static final String TYPE = "type";
-    private static final String SIZE = "size";
-    private static final int SIZE_DEFAULT = 12;
-    private static final String OFFSET = "offset";
+    public static final String TYPE = "type";
+    public static final String SIZE = "size";
+    public static final int SIZE_DEFAULT = 12;
+    public static final String OFFSET = "offset";
 
 
     public static String getBillUrl(int type, int offset) {
