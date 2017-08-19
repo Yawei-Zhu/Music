@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
+import android.support.annotation.NonNull;
 import android.support.v4.content.PermissionChecker;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,7 +24,7 @@ import android.widget.TextView;
 
 import com.wind.music.R;
 import com.wind.music.adapter.SongRecyclerAdapter;
-import com.wind.music.bean.Song;
+import com.wind.music.bean.BillBoardBean;
 import com.wind.music.decoration.DefaultDecoration;
 import com.wind.music.service.PlayerService;
 import com.wind.music.util.LoadLocal;
@@ -32,6 +33,7 @@ import com.wind.music.util.MusicPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class LocalActivity extends BaseActivity {
     private final String TAG = getClass().getSimpleName();
@@ -44,7 +46,7 @@ public class LocalActivity extends BaseActivity {
     private Button btMode;
     private TextView tvTitle;
 
-    private List<Song> songs;
+    private List<BillBoardBean.Song> songs;
     private SongRecyclerAdapter adapter;
     private MusicPlayer player;
     private boolean isProgressTrackingTouch = false;
@@ -90,6 +92,9 @@ public class LocalActivity extends BaseActivity {
             case R.id.action_close:
                 finish();
                 Process.killProcess(Process.myPid());
+                break;
+            case R.id.action_into_billboard:
+                startActivity(new Intent(this, BillBoardActivity.class));
                 break;
         }
         return true;
@@ -153,7 +158,6 @@ public class LocalActivity extends BaseActivity {
 
         tvCurrent = (TextView) findViewById(R.id.tv_current);
         tvDuration = (TextView) findViewById(R.id.tv_duration);
-        Drawable d;
 
         btMode = (Button) findViewById(R.id.bt_mode);
         if (btMode != null) {
@@ -204,10 +208,24 @@ public class LocalActivity extends BaseActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            for (int result : grantResults) {
+                if (result != PermissionChecker.PERMISSION_GRANTED) {
+                    return;
+                }
+            }
+            _LoadData();
+        }
+    }
+
     private void _LoadData() {
-        LoadLocal.loadSongs(new LoadLocalListener<List<Song>>() {
+        srLayout.setRefreshing(true);
+        LoadLocal.loadSongs(new LoadLocalListener<List<BillBoardBean.Song>>() {
             @Override
-            public void onRespond(List<Song> data) {
+            public void onRespond(List<BillBoardBean.Song> data) {
                 if (songs != null) {
                     songs.clear();
                     songs.addAll(data);
@@ -250,7 +268,7 @@ public class LocalActivity extends BaseActivity {
     private final SongRecyclerAdapter.OnItemClickListener selectSongListener =
             new SongRecyclerAdapter.OnItemClickListener() {
                 @Override
-                public void onItemClick(Song item, int position) {
+                public void onItemClick(BillBoardBean.Song item, int position) {
                     if (player != null) {
                         if (player.isPlaying()) {
                             if (player.whatIsPlaying() == position) {
@@ -341,7 +359,7 @@ public class LocalActivity extends BaseActivity {
     private void updateIndex(int index) {
         if (index >= 0 && songs != null && songs.size() > index) {
             if (tvTitle != null) {
-                tvTitle.setText(songs.get(index).title);
+                tvTitle.setText(songs.get(index).getTitle());
             }
         }
     }
@@ -353,9 +371,9 @@ public class LocalActivity extends BaseActivity {
         int minute = totalSecond / 60 % 60;
         int hour = totalSecond / 3600;
         if (hour == 0) {
-            s = String.format("%02d:%02d", minute, second);
+            s = String.format(Locale.CHINA, "%02d:%02d", minute, second);
         } else {
-            s = String.format("%d:%02d:%02d", hour, minute, second);
+            s = String.format(Locale.CHINA, "%d:%02d:%02d", hour, minute, second);
         }
         return s;
     }

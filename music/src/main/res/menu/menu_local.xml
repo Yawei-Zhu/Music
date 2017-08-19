@@ -7,4 +7,10 @@
         android:orderInCategory="100"
         android:title="@string/action_close"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_into_billboard"
+        android:orderInCategory="100"
+        android:title="@string/action_into_billboard"
+        app:showAsAction="ifRoom" />
 </menu>

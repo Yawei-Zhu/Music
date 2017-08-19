@@ -6,13 +6,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import com.github.stuxuhai.jpinyin.PinyinException;
 import com.github.stuxuhai.jpinyin.PinyinFormat;
 import com.github.stuxuhai.jpinyin.PinyinHelper;
-import com.wind.music.bean.Artist;
-import com.wind.music.bean.Song;
+import com.wind.music.bean.BillBoardBean;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,65 +33,64 @@ public class LoadLocal {
         mContext = null;
     }
 
-    public static void loadSongs(final LoadLocalListener<List<Song>> listener) {
-        new AsyncTask<Void, Void, List<Song>>() {
+    public static void loadSongs(final LoadLocalListener<List<BillBoardBean.Song>> listener) {
+        new AsyncTask<Void, Void, List<BillBoardBean.Song>>() {
             @Override
-            protected List<Song> doInBackground(Void... params) {
-                List<Song> result = loadData();
-                return result;
+            protected List<BillBoardBean.Song> doInBackground(Void... params) {
+                return loadData();
             }
 
             @Override
-            protected void onPostExecute(List<Song> songs) {
+            protected void onPostExecute(List<BillBoardBean.Song> songs) {
                 if (listener != null)
                     listener.onRespond(songs);
             }
         }.execute();
     }
 
-    private static List<Song> loadData() {
-        ArrayList<Song> data = new ArrayList<>();
+    private static List<BillBoardBean.Song> loadData() {
+        ArrayList<BillBoardBean.Song> data = new ArrayList<>();
 
         ContentResolver resolver = mContext.getContentResolver();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = null;
-        String selection = null;
-        String[] selectionArgs = null;
         String sortOrder = MediaStore.Audio.Media.DEFAULT_SORT_ORDER;
-        Cursor cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder);
+        Cursor cursor = resolver.query(uri, null, null, null, sortOrder);
+        if (cursor == null) {
+            return data;
+        }
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            Song song = new Song();
+            BillBoardBean.Song song = new BillBoardBean.Song();
             data.add(song);
-            song._id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-            song.title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-            song.data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-            song.duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+            song.setSong_id(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
+            song.setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+            song.setPath(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
+            song.setFile_duration(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
 
-            song.artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-            song.artist_id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID));
+            song.setArtist_name(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
+            song.setArtist_id(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)));
 
-            song.album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-            song.album_id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+            song.setAlbum(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+            song.setAlbum_no(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)));
 
-            song.album_art = query(resolver, song.album_id);
+            song.setPic_small(query(resolver, song.getAlbum_no()));
         }
         cursor.close();
-        Collections.sort(data, new Comparator<Song>() {
+        Collections.sort(data, new Comparator<BillBoardBean.Song>() {
             @Override
-            public int compare(Song l, Song r) {
-                String lp = null;
+            public int compare(BillBoardBean.Song l, BillBoardBean.Song r) {
+                String lp;
                 try {
-                    lp = PinyinHelper.convertToPinyinString(l.title, ",", PinyinFormat.WITHOUT_TONE);
+                    lp = PinyinHelper.convertToPinyinString(l.getTitle(), ",", PinyinFormat.WITHOUT_TONE);
                 } catch (PinyinException e) {
                     e.printStackTrace();
-                    lp = l.title;
+                    lp = l.getTitle();
                 }
-                String rp = null;
+                String rp;
                 try {
-                    rp = PinyinHelper.convertToPinyinString(r.title, ",", PinyinFormat.WITHOUT_TONE);
+                    rp = PinyinHelper.convertToPinyinString(r.getTitle(), ",", PinyinFormat.WITHOUT_TONE);
                 } catch (PinyinException e) {
                     e.printStackTrace();
-                    rp = r.title;
+                    rp = r.getTitle();
                 }
                 return lp.toLowerCase().compareTo(rp.toLowerCase());
             }
@@ -104,82 +101,19 @@ public class LoadLocal {
 
     private static String query(ContentResolver resolver, long album_id) {
         Uri uri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
+        String[] projection = new String[]{MediaStore.Audio.Albums.ALBUM_ART};
         String selection = MediaStore.Audio.Albums._ID + "=?";
         String[] selectionArgs = new String[]{String.valueOf(album_id)};
-        Cursor cursor = resolver.query(uri, null, selection, selectionArgs, null);
+        Cursor cursor = resolver.query(uri, projection, selection, selectionArgs, null);
 
         if (cursor != null && cursor.moveToFirst()) {
-            String album_art = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+            String album_art = cursor.getString(0);
             cursor.close();
             return album_art;
         } else if (cursor != null) {
             cursor.close();
         }
         return null;
-    }
-
-    private static List<Artist> queryArtist() {
-        List<Artist> artists = new ArrayList<>();
-        Uri uri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
-        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int column = cursor.getColumnCount();
-            Log.i(TAG, "queryArtist: start");
-            for (int i = 0; i < column; i++) {
-                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
-            }
-            Log.i(TAG, "queryArtist: end");
-            cursor.close();
-        }
-        return artists;
-    }
-
-    private static List<Artist> queryAlbum() {
-        List<Artist> artists = new ArrayList<>();
-        Uri uri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int column = cursor.getColumnCount();
-            Log.i(TAG, "queryAlbum: start");
-            for (int i = 0; i < column; i++) {
-                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
-            }
-            Log.i(TAG, "queryAlbum: end");
-            cursor.close();
-        }
-        return artists;
-    }
-
-    private static List<Artist> queryGenre() {
-        List<Artist> artists = new ArrayList<>();
-        Uri uri = MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI;
-        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int column = cursor.getColumnCount();
-            Log.i(TAG, "queryGenre: start");
-            for (int i = 0; i < column; i++) {
-                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
-            }
-            Log.i(TAG, "queryGenre: end");
-            cursor.close();
-        }
-        return artists;
-    }
-
-    private static List<Artist> queryPlaylists() {
-        List<Artist> artists = new ArrayList<>();
-        Uri uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
-        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int column = cursor.getColumnCount();
-            Log.i(TAG, "Playlists: start");
-            for (int i = 0; i < column; i++) {
-                Log.i(TAG, i + " " + cursor.getColumnName(i) + "=" + cursor.getString(i));
-            }
-            Log.i(TAG, "Playlists: end");
-            cursor.close();
-        }
-        return artists;
     }
 
 }

@@ -1,10 +1,8 @@
 package com.wind.music.util;
 
-import com.wind.music.bean.NetworkSong;
+import com.wind.music.bean.BillBoardBean;
 
-import java.util.List;
-
-import retrofit2.Callback;
+import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
@@ -13,12 +11,11 @@ import retrofit2.http.Query;
  */
 
 public interface Network2 {
-    @GET
-    void listSong(
+    @GET("ting")
+    Call<BillBoardBean> listSong(
             @Query(Urls.FORMAT) String format,
             @Query(Urls.METHOD) String method,
             @Query(Urls.TYPE) int type,
             @Query(Urls.SIZE) int size,
-            @Query(Urls.OFFSET) int offset,
-            Callback<List<NetworkSong>> callback);
+            @Query(Urls.OFFSET) int offset);
 }

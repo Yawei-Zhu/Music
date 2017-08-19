@@ -1,6 +1,6 @@
 package com.wind.music.view;
 
-import com.wind.music.bean.Song;
+import com.wind.music.bean.BillBoardBean;
 import com.wind.music.util.MusicPlayer;
 
 import java.util.List;
@@ -10,6 +10,6 @@ import java.util.List;
  */
 
 public interface LocalView {
-    public void bindData(List<Song> data);
+    public void bindData(List<BillBoardBean.Song> data);
     public void bindPlayer(MusicPlayer player);
 }

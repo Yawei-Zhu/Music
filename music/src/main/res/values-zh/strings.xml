@@ -5,5 +5,7 @@
     <string name="title_activity_local">本地音乐</string>
     <string name="action_settings">设置</string>
     <string name="action_close">关闭</string>
+    <string name="action_into_billboard">排行榜</string>
+    <string name="action_into_local">本地</string>
     <string name="section_format">来自 %1$d 的欢迎</string>
 </resources>

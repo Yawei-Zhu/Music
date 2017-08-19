@@ -9,7 +9,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 
-import com.wind.music.bean.Song;
+import com.wind.music.bean.BillBoardBean;
 import com.wind.music.util.MusicPlayer;
 import com.wind.music.util.PlayInfoSaver;
 
@@ -27,7 +27,7 @@ public class PlayerService extends Service {
     public static final int MODE_RANDOM = 2;
     public static final int MODE_SINGLE = 3;
 
-    private List<Song> songs;
+    private List<BillBoardBean.Song> songs;
     private PlayInfoSaver saver;
     private MediaPlayer player;
     private int index = -1;
@@ -84,7 +84,7 @@ public class PlayerService extends Service {
     private class PlayerBinder extends Binder implements MusicPlayer {
 
         @Override
-        public void setData(List<Song> data) {
+        public void setData(List<BillBoardBean.Song> data) {
             songs = data;
         }
 
@@ -181,14 +181,14 @@ public class PlayerService extends Service {
 
     private void play() {
         if (songs != null && songs.size() > index && index >= 0) {
-            Song song = songs.get(index);
+            BillBoardBean.Song song = songs.get(index);
 
             if (player == null) {
                 initPlayer();
             }
             player.reset();
             try {
-                player.setDataSource(song.data);
+                player.setDataSource(song.getPath());
             } catch (Exception e) {
                 e.printStackTrace();
             }
