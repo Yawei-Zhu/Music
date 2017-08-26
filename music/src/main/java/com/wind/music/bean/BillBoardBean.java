@@ -1,5 +1,7 @@
 package com.wind.music.bean;
 
+import com.wind.music.util.Urls;
+
 import java.util.List;
 
 /**
@@ -100,6 +102,9 @@ public class BillBoardBean extends BaseBean {
         private String pic_small;
         private String lrclink;
 
+        private SongInfoBean.SongInfo songinfo;
+        private SongInfoBean.Bitrate bitrate;
+
         public int getSong_id() {
             return song_id;
         }
@@ -186,6 +191,22 @@ public class BillBoardBean extends BaseBean {
 
         public void setLrclink(String lrclink) {
             this.lrclink = lrclink;
+        }
+
+        public SongInfoBean.SongInfo getSonginfo() {
+            return songinfo;
+        }
+
+        public void setSonginfo(SongInfoBean.SongInfo songinfo) {
+            this.songinfo = songinfo;
+        }
+
+        public SongInfoBean.Bitrate getBitrate() {
+            return bitrate;
+        }
+
+        public void setBitrate(SongInfoBean.Bitrate bitrate) {
+            this.bitrate = bitrate;
         }
     }
 }

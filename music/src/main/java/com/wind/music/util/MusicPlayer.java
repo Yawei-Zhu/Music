@@ -26,7 +26,7 @@ public interface MusicPlayer {
     void unregisterOnPlayInfoListener(OnPlayInfoListener listener);
 
     public interface OnPlayInfoListener {
-        void onPlayInfo(int index, int position);
+        void onPlayInfo(BillBoardBean.Song song, int position);
     }
 
 }

@@ -12,11 +12,13 @@ public class Urls {
 
     public static final String METHOD = "method";
     public static final String METHOD_BILL = "baidu.ting.billboard.billList";
+    public static final String METHOD_PLAY = "baidu.ting.song.play";
 
     public static final String TYPE = "type";
     public static final String SIZE = "size";
     public static final int SIZE_DEFAULT = 20;
     public static final String OFFSET = "offset";
+    public static final String SONG_ID = "songid";
 
 
     public static String getBillUrl(int type, int offset) {
@@ -27,6 +29,16 @@ public class Urls {
                 .append("&").append(TYPE).append("=").append(type)
                 .append("&").append(SIZE).append("=").append(SIZE_DEFAULT)
                 .append("&").append(OFFSET).append("=").append(offset);
+
+        return url.toString();
+    }
+
+    public static String getSongInfoUrl(int id) {
+        StringBuilder url = new StringBuilder();
+        url.append(URL)
+                .append("ting?").append(FORMAT).append("=").append(FORMAT_JSON)
+                .append("&").append(METHOD).append("=").append(METHOD_PLAY)
+                .append("&").append(SONG_ID).append("=").append(id);
 
         return url.toString();
     }

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.wind.music.R;
 import com.wind.music.bean.BillBoardBean;
 import com.zhy.adapter.recyclerview.CommonAdapter;
@@ -36,8 +37,7 @@ public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
         tvAlbum.setText(song.getAlbum());
 
         ImageView ivPic = holder.getView(R.id.iv_pic);
-        Bitmap bm = BitmapFactory.decodeFile(song.getPic_small());
-        ivPic.setImageBitmap(bm);
+        Glide.with(mContext).load(song.getPic_small()).into(ivPic);
 
         holder.setOnClickListener(R.id.item_song_local, new View.OnClickListener() {
             @Override

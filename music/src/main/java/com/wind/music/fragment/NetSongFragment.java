@@ -2,16 +2,11 @@ package com.wind.music.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 
 import com.google.gson.Gson;
-import com.wind.music.adapter.SongAdapter;
 import com.wind.music.bean.BillBoardBean;
-import com.wind.music.decoration.DefaultDecoration;
 import com.wind.music.util.Loader;
 import com.wind.music.util.NetworkListener;
 
@@ -19,36 +14,23 @@ import com.wind.music.util.NetworkListener;
  * Created by Administrator on 2017/5/8.
  */
 
-public abstract class BaseSongFragment extends ListFragment {
+public class NetSongFragment extends SongFragment {
 
     private static final String TAG = "SongFragment";
     public static final int TYPE_NEW = 1;
     public static final int TYPE_HOT = 2;
+    private int mType;
 
-    private SongAdapter adapter;
-    private BillBoardBean song;
+    public static NetSongFragment of(int type) {
+        NetSongFragment instance = new NetSongFragment();
+        instance.setType(type);
+        return instance;
+    }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        LinearLayoutManager lm = new LinearLayoutManager(getContext());
-        lm.setOrientation(LinearLayoutManager.VERTICAL);
-        getRecyclerView().setLayoutManager(lm);
-
-        adapter = new SongAdapter(getContext(), song);
-        getRecyclerView().setAdapter(adapter);
-
-        RecyclerView.ItemDecoration decor = new DefaultDecoration();
-        getRecyclerView().addItemDecoration(decor);
-
-        getRefreshLayout().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refresh();
-            }
-        });
-
+        refresh();
     }
 
     @Override
@@ -65,7 +47,13 @@ public abstract class BaseSongFragment extends ListFragment {
         return title;
     }
 
-    public abstract int getType();
+    public int getType() {
+        return mType;
+    }
+
+    public void setType(int type) {
+        this.mType = type;
+    }
 
     @Override
     public void refresh() {
@@ -76,8 +64,8 @@ public abstract class BaseSongFragment extends ListFragment {
                 getRefreshLayout().setRefreshing(false);
                 Log.i(TAG, "onRespond: " + response);
                 Gson gson = new Gson();
-                song = gson.fromJson(response, BillBoardBean.class);
-                adapter.setData(song);
+                BillBoardBean song = gson.fromJson(response, BillBoardBean.class);
+                adapter.getDatas().addAll(song.getSong_list());
                 adapter.notifyDataSetChanged();
             }
         });

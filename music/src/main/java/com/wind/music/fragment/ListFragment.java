@@ -22,13 +22,16 @@ public class ListFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_list, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh_layout);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        mRefreshLayout = new SwipeRefreshLayout(getContext());
+        mRecyclerView = new RecyclerView(getContext());
+        mRefreshLayout.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        mRecyclerView.setLayoutParams(new SwipeRefreshLayout.LayoutParams(
+                SwipeRefreshLayout.LayoutParams.MATCH_PARENT,
+                SwipeRefreshLayout.LayoutParams.MATCH_PARENT));
+        mRefreshLayout.addView(mRecyclerView);
+        return mRefreshLayout;
     }
 
     public SwipeRefreshLayout getRefreshLayout() {
