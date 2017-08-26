@@ -3,14 +3,13 @@ package com.wind.music.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.wind.music.R;
-import com.wind.music.bean.Song;
+import com.wind.music.bean.BillBoardBean;
 import com.zhy.adapter.recyclerview.CommonAdapter;
 import com.zhy.adapter.recyclerview.base.ViewHolder;
 
@@ -20,25 +19,25 @@ import java.util.List;
  * Created by Administrator on 2017/6/28.
  */
 
-public class SongRecyclerAdapter extends CommonAdapter<Song> {
+public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
 
-    public SongRecyclerAdapter(Context context, List<Song> data) {
+    public SongRecyclerAdapter(Context context, List<BillBoardBean.Song> data) {
         super(context, R.layout.item_song_local, data);
     }
 
     @Override
-    protected void convert(ViewHolder holder, final Song song, final int position) {
+    protected void convert(ViewHolder holder, final BillBoardBean.Song song, final int position) {
         TextView tvTitle = holder.getView(R.id.tv_title);
-        tvTitle.setText(song.title);
+        tvTitle.setText(song.getTitle());
 
         TextView tvName = holder.getView(R.id.tv_name);
-        tvName.setText(song.artist);
+        tvName.setText(song.getArtist_name());
 
         TextView tvAlbum = holder.getView(R.id.tv_album);
-        tvAlbum.setText(song.album);
+        tvAlbum.setText(song.getAlbum());
 
         ImageView ivPic = holder.getView(R.id.iv_pic);
-        ivPic.setImageURI(Uri.parse(song.album_art));
+        Glide.with(mContext).load(song.getPic_small()).into(ivPic);
 
         holder.setOnClickListener(R.id.item_song_local, new View.OnClickListener() {
             @Override
@@ -61,6 +60,6 @@ public class SongRecyclerAdapter extends CommonAdapter<Song> {
     }
 
     public interface OnItemClickListener {
-        public void onItemClick(Song item, int position);
+        public void onItemClick(BillBoardBean.Song item, int position);
     }
 }

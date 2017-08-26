@@ -8,10 +8,16 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
-import com.wind.music.bean.Song;
+import com.google.gson.Gson;
+import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.SongInfoBean;
 import com.wind.music.util.MusicPlayer;
+import com.wind.music.util.Network;
+import com.wind.music.util.NetworkListener;
 import com.wind.music.util.PlayInfoSaver;
+import com.wind.music.util.Urls;
 
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +33,7 @@ public class PlayerService extends Service {
     public static final int MODE_RANDOM = 2;
     public static final int MODE_SINGLE = 3;
 
-    private List<Song> songs;
+    private List<BillBoardBean.Song> songs;
     private PlayInfoSaver saver;
     private MediaPlayer player;
     private int index = -1;
@@ -84,7 +90,7 @@ public class PlayerService extends Service {
     private class PlayerBinder extends Binder implements MusicPlayer {
 
         @Override
-        public void setData(List<Song> data) {
+        public void setData(List<BillBoardBean.Song> data) {
             songs = data;
         }
 
@@ -181,14 +187,28 @@ public class PlayerService extends Service {
 
     private void play() {
         if (songs != null && songs.size() > index && index >= 0) {
-            Song song = songs.get(index);
+            BillBoardBean.Song song = songs.get(index);
+
+            String path = song.getPath();
+            if (TextUtils.isEmpty(path)) {
+                if (song.getBitrate() == null) {
+                    loadSongInfo(song);
+                    return;
+                } else {
+                    path = song.getBitrate().getFile_link();
+                    if (TextUtils.isEmpty(path)) {
+                        next();
+                        return;
+                    }
+                }
+            }
 
             if (player == null) {
                 initPlayer();
             }
             player.reset();
             try {
-                player.setDataSource(song.data);
+                player.setDataSource(path);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -277,6 +297,21 @@ public class PlayerService extends Service {
         return mode;
     }
 
+    private void loadSongInfo(final BillBoardBean.Song song) {
+        Network.load(Urls.getSongInfoUrl(song.getSong_id()), new NetworkListener() {
+            @Override
+            public void onRespond(int code, String msg, String response) {
+                if (code == Network.CODE_SUCCESS) {
+                    Gson gson = new Gson();
+                    SongInfoBean bean = gson.fromJson(response, SongInfoBean.class);
+                    song.setSonginfo(bean.getSonginfo());
+                    song.setBitrate(bean.getBitrate());
+                    play();
+                }
+            }
+        });
+    }
+
     private final MediaPlayer.OnPreparedListener onPreparedListener = new MediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared(MediaPlayer mp) {
@@ -343,8 +378,9 @@ public class PlayerService extends Service {
         @Override
         public void handleMessage(Message msg) {
             synchronized (listenerSet) {
+                BillBoardBean.Song song = songs.get(msg.arg1);
                 for (MusicPlayer.OnPlayInfoListener l : listenerSet) {
-                    l.onPlayInfo(msg.arg1, msg.arg2);
+                    l.onPlayInfo(song, msg.arg2);
                 }
             }
         }

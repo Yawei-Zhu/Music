@@ -3,7 +3,6 @@ package com.wind.music.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -11,11 +10,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.wind.music.R;
-import com.wind.music.bean.Song;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.wind.music.bean.BillBoardBean;
 
 /**
  * Created by Administrator on 2017/4/24.
@@ -24,9 +21,9 @@ import java.util.List;
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     private Context mContext;
-    private List<Song> mData;
+    private BillBoardBean mData;
 
-    public SongAdapter(Context context, List<Song> data) {
+    public SongAdapter(Context context, BillBoardBean data) {
         setContext(context);
         setData(data);
     }
@@ -42,14 +39,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         return mContext;
     }
 
-    public void setData(List<Song> data) {
-        if (data == null) {
-            data = new ArrayList<>();
-        }
+    public void setData(BillBoardBean data) {
         this.mData = data;
     }
 
-    public List<Song> getData() {
+    public BillBoardBean getData() {
         return mData;
     }
 
@@ -66,16 +60,21 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Song song = getData().get(position);
-        holder.tvTitle.setText(song.title);
-        holder.tvName.setText(song.artist);
-        holder.tvAlbum.setText(song.album);
-        holder.ivPic.setImageURI(Uri.parse(song.album_art));
+        BillBoardBean.Song song = getData().getSong_list().get(position);
+        holder.tvTitle.setText(song.getTitle());
+        holder.tvName.setText(song.getArtist_name());
+        holder.tvAlbum.setText(song.getAlbum());
+        Glide.with(getContext()).load(song.getPic_small()).into(holder.ivPic);
     }
 
     @Override
     public int getItemCount() {
-        return mData.size();
+        int count = 0;
+        try {
+            count = mData.getSong_list().size();
+        } catch (NullPointerException e) {
+        }
+        return count;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -84,7 +83,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         TextView tvTitle;
         TextView tvName;
         TextView tvAlbum;
-        Song song;
+        BillBoardBean.Song song;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -95,12 +94,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             tvAlbum = (TextView) itemView.findViewById(R.id.tv_album);
         }
 
-        public void bindData(Song song, int position) {
+        public void bindData(BillBoardBean.Song song, int position) {
             this.song = song;
-            tvTitle.setText(song.title);
-            tvName.setText(song.artist);
-            if (song.album_art != null) {
-                loadImage(ivPic, song.album_art);
+            tvTitle.setText(song.getTitle());
+            tvName.setText(song.getArtist_name());
+            if (song.getPic_small() != null) {
+                loadImage(ivPic, song.getPic_small());
             }
         }
 
@@ -148,6 +147,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     }
 
     public interface OnItemClickListener {
-        public void onItemClick(Song item, int position);
+        public void onItemClick(BillBoardBean.Song item, int position);
     }
 }

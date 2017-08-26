@@ -1,6 +1,6 @@
 package com.wind.music.util;
 
-import com.wind.music.bean.Song;
+import com.wind.music.bean.BillBoardBean;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
  */
 
 public interface MusicPlayer {
-    void setData(List<Song> data);
+    void setData(List<BillBoardBean.Song> data);
     void play();
     void play(int index);
     void pause();
@@ -26,7 +26,7 @@ public interface MusicPlayer {
     void unregisterOnPlayInfoListener(OnPlayInfoListener listener);
 
     public interface OnPlayInfoListener {
-        void onPlayInfo(int index, int position);
+        void onPlayInfo(BillBoardBean.Song song, int position);
     }
 
 }
