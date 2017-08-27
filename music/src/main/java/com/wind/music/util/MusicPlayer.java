@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface MusicPlayer {
     void setData(List<BillBoardBean.Song> data);
+    List<BillBoardBean.Song> getData();
     void play();
     void play(int index);
     void pause();

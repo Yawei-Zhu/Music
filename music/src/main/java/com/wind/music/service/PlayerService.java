@@ -95,6 +95,11 @@ public class PlayerService extends Service {
         }
 
         @Override
+        public List<BillBoardBean.Song> getData() {
+            return songs;
+        }
+
+        @Override
         public void play() {
             PlayerService.this.play();
         }

@@ -25,6 +25,7 @@ import com.wind.music.bean.BillBoardBean;
 import com.wind.music.bean.SongInfoBean;
 import com.wind.music.fragment.BaseFragment;
 import com.wind.music.R;
+import com.wind.music.fragment.MusicControllerFragment;
 import com.wind.music.fragment.NetSongFragment;
 import com.wind.music.service.PlayerService;
 import com.wind.music.util.MusicPlayer;
@@ -39,7 +40,7 @@ public class BillBoardActivity extends BaseActivity {
     private ViewPager mViewPager;
 
     private MediaPlayer mediaPlayer;
-
+    private MusicControllerFragment ctrlFragment;
     private MusicPlayer player;
     private int type = -1;
 
@@ -74,10 +75,16 @@ public class BillBoardActivity extends BaseActivity {
                             player.setData(frag.getSongs());
                             player.play(position);
                             type = frag.getType();
+                            if (ctrlFragment != null) {
+                                ctrlFragment.updatePlaying(true);
+                            }
                         } else {
                             if (player.isPlaying()) {
                                 if (player.whatIsPlaying() == position) {
                                     player.pause();
+                                    if (ctrlFragment != null) {
+                                        ctrlFragment.updatePlaying(false);
+                                    }
                                 } else {
                                     player.play(position);
                                 }
@@ -86,6 +93,9 @@ public class BillBoardActivity extends BaseActivity {
                                     player.play();
                                 } else {
                                     player.play(position);
+                                }
+                                if (ctrlFragment != null) {
+                                    ctrlFragment.updatePlaying(true);
                                 }
                             }
                         }
@@ -112,16 +122,8 @@ public class BillBoardActivity extends BaseActivity {
         mViewPager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(mViewPager);
 
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
+        ctrlFragment = (MusicControllerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.ctrl_fragment);
     }
 
     @Override
@@ -171,6 +173,10 @@ public class BillBoardActivity extends BaseActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (service instanceof MusicPlayer) {
                 player = (MusicPlayer) service;
+
+                if (ctrlFragment != null) {
+                    ctrlFragment.setPlayer(player);
+                }
             }
         }
 
