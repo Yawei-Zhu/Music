@@ -25,6 +25,7 @@ import com.wind.music.R;
 import com.wind.music.adapter.SongRecyclerAdapter;
 import com.wind.music.bean.BillBoardBean;
 import com.wind.music.fragment.LocalSongFragment;
+import com.wind.music.fragment.MusicControllerFragment;
 import com.wind.music.service.PlayerService;
 import com.wind.music.util.MusicPlayer;
 
@@ -34,15 +35,9 @@ public class LocalActivity extends BaseActivity {
     private final String TAG = getClass().getSimpleName();
 
     private SwipeRefreshLayout srLayout;
-    private TextView tvCurrent;
-    private TextView tvDuration;
-    private SeekBar sbProgress;
-    private Button btPlay;
-    private Button btMode;
-    private TextView tvTitle;
 
     private MusicPlayer player;
-    private boolean isProgressTrackingTouch = false;
+    private MusicControllerFragment ctrlFragment;
     private LocalSongFragment songFragment;
     private boolean local = false;
 
@@ -125,9 +120,9 @@ public class LocalActivity extends BaseActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (service instanceof MusicPlayer) {
                 player = (MusicPlayer) service;
-                player.registerOnPlayInfoListener(onPlayInfoListener);
-                updatePlaying(player.isPlaying());
-                updateMode(player.getPlayMode());
+                if (ctrlFragment != null) {
+                    ctrlFragment.setPlayer(player);
+                }
             }
         }
 
@@ -145,31 +140,13 @@ public class LocalActivity extends BaseActivity {
             setSupportActionBar(toolbar);
         }
 
-        sbProgress = (SeekBar) findViewById(R.id.sb_progress);
-        if (sbProgress != null) {
-            sbProgress.setOnSeekBarChangeListener(onSeekBarChangeListener);
-        }
-
-        tvCurrent = (TextView) findViewById(R.id.tv_current);
-        tvDuration = (TextView) findViewById(R.id.tv_duration);
-
-        btMode = (Button) findViewById(R.id.bt_mode);
-        if (btMode != null) {
-            btMode.setOnClickListener(switchPlayModeListener);
-        }
-
-        tvTitle = (TextView) findViewById(R.id.tv_title);
-
-        btPlay = (Button) findViewById(R.id.bt_play);
-        if (btPlay != null) {
-            btPlay.setOnClickListener(pauseListener);
-        }
-
         FragmentManager fm = getSupportFragmentManager();
         songFragment = (LocalSongFragment) fm.findFragmentById(R.id.song_fragment);
         if (songFragment != null) {
             songFragment.setOnItemClickListener(selectSongListener);
         }
+
+        ctrlFragment = (MusicControllerFragment) fm.findFragmentById(R.id.ctrl_fragment);
     }
 
     @Override
@@ -203,31 +180,6 @@ public class LocalActivity extends BaseActivity {
         }
     }
 
-    private final View.OnClickListener switchPlayModeListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (player != null) {
-                int mode = player.changePlayMode();
-                updateMode(mode);
-            }
-        }
-    };
-
-    private final View.OnClickListener pauseListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (player != null) {
-                if (player.isPlaying()) {
-                    player.pause();
-                    updatePlaying(false);
-                } else {
-                    player.play();
-                    updatePlaying(true);
-                }
-            }
-        }
-    };
-
     private final SongRecyclerAdapter.OnItemClickListener selectSongListener =
             new SongRecyclerAdapter.OnItemClickListener() {
                 @Override
@@ -237,7 +189,9 @@ public class LocalActivity extends BaseActivity {
                             if (player.isPlaying()) {
                                 if (player.whatIsPlaying() == position) {
                                     player.pause();
-                                    updatePlaying(false);
+                                    if (ctrlFragment != null) {
+                                        ctrlFragment.updatePlaying(false);
+                                    }
                                 } else {
                                     player.play(position);
                                 }
@@ -247,116 +201,20 @@ public class LocalActivity extends BaseActivity {
                                 } else {
                                     player.play(position);
                                 }
-                                updatePlaying(true);
+                                if (ctrlFragment != null) {
+                                    ctrlFragment.updatePlaying(true);
+                                }
                             }
                         } else {
                             player.setData(songFragment.getSongs());
                             player.play(position);
                             local = true;
+                            if (ctrlFragment != null) {
+                                ctrlFragment.updatePlaying(true);
+                            }
                         }
                     }
                 }
             };
 
-    private final MusicPlayer.OnPlayInfoListener onPlayInfoListener = new MusicPlayer.OnPlayInfoListener() {
-        BillBoardBean.Song oldSong = null;
-
-        @Override
-        public void onPlayInfo(BillBoardBean.Song song, int position) {
-            if (oldSong != song) {
-                updateSong(oldSong = song);
-            }
-            updateDuration(player == null ? 0 : player.getDuration());
-            updatePosition(position);
-        }
-    };
-
-    private final SeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            if (tvCurrent != null) {
-                tvCurrent.setText(time2String(progress));
-            }
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-            isProgressTrackingTouch = true;
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-            isProgressTrackingTouch = false;
-            if (player != null) {
-                player.seekTo(seekBar.getProgress());
-            }
-        }
-    };
-
-    private void updatePlaying(boolean isPlaying) {
-        if (btPlay != null) {
-            if (isPlaying) {
-                btPlay.setText(R.string.musicplayer_pause);
-            } else {
-                btPlay.setText(R.string.musicplayer_play);
-            }
-        }
-    }
-
-    private void updateMode(int mode) {
-        int s = 0;
-        switch (mode) {
-            case PlayerService.MODE_CYCLE:
-                s = R.string.musicplayer_mode_cycle;
-                break;
-            case PlayerService.MODE_ORDER:
-                s = R.string.musicplayer_mode_order;
-                break;
-            case PlayerService.MODE_RANDOM:
-                s = R.string.musicplayer_mode_random;
-                break;
-            case PlayerService.MODE_SINGLE:
-                s = R.string.musicplayer_mode_single;
-                break;
-        }
-
-        if (btMode != null && s != 0) {
-            btMode.setText(s);
-        }
-    }
-
-    private void updateSong(BillBoardBean.Song song) {
-        if (tvTitle != null) {
-            tvTitle.setText(song.getTitle());
-        }
-    }
-
-    private String time2String(int time) {
-        String s;
-        int totalSecond = time / 1000;
-        int second = totalSecond % 60;
-        int minute = totalSecond / 60 % 60;
-        int hour = totalSecond / 3600;
-        if (hour == 0) {
-            s = String.format(Locale.CHINA, "%02d:%02d", minute, second);
-        } else {
-            s = String.format(Locale.CHINA, "%d:%02d:%02d", hour, minute, second);
-        }
-        return s;
-    }
-
-    private void updateDuration(int duration) {
-        if (sbProgress != null) {
-            sbProgress.setMax(duration);
-        }
-        if (tvDuration != null) {
-            tvDuration.setText(time2String(duration));
-        }
-    }
-
-    private void updatePosition(int position) {
-        if (sbProgress != null) {
-            sbProgress.setProgress(position);
-        }
-    }
 }
