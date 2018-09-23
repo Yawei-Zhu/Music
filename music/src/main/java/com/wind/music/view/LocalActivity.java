@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.wind.music.Application;
 import com.wind.music.R;
 import com.wind.music.adapter.SongRecyclerAdapter;
 import com.wind.music.bean.BillBoardBean;
@@ -39,7 +40,6 @@ public class LocalActivity extends BaseActivity {
     private MusicPlayer player;
     private MusicControllerFragment ctrlFragment;
     private LocalSongFragment songFragment;
-    private boolean local = false;
 
     /*
      * activity lifecycle start
@@ -185,7 +185,7 @@ public class LocalActivity extends BaseActivity {
                 @Override
                 public void onItemClick(BillBoardBean.Song item, int position) {
                     if (player != null) {
-                        if (local) {
+                        if (0 == Application.getApp().getCurrSongType()) {
                             if (player.isPlaying()) {
                                 if (player.whatIsPlaying() == position) {
                                     player.pause();
@@ -208,7 +208,7 @@ public class LocalActivity extends BaseActivity {
                         } else {
                             player.setData(songFragment.getSongs());
                             player.play(position);
-                            local = true;
+                            Application.getApp().setCurrSongType(0);
                             if (ctrlFragment != null) {
                                 ctrlFragment.updatePlaying(true);
                             }

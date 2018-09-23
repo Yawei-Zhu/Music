@@ -13,6 +13,7 @@ import com.wind.music.util.Network;
 public class Application extends android.app.Application {
 
     private static Application app;
+    private int currSongType = -1;
 
     @Override
     public void onCreate() {
@@ -36,5 +37,21 @@ public class Application extends android.app.Application {
 
     public static Application getApp() {
         return app;
+    }
+
+    /**
+     * get the type of the playing song
+     * @return 0 for local; other for net
+     */
+    public int getCurrSongType() {
+        return currSongType;
+    }
+
+    /**
+     * set the type of the playing song
+     * @param type {@link Application#getCurrSongType Application.getCurrSongType}
+     */
+    public void setCurrSongType(int type) {
+        this.currSongType = type;
     }
 }

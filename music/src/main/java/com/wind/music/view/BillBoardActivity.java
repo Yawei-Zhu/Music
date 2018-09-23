@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.google.gson.Gson;
+import com.wind.music.Application;
 import com.wind.music.adapter.FragmentAdapter;
 import com.wind.music.adapter.SongRecyclerAdapter;
 import com.wind.music.bean.BillBoardBean;
@@ -39,10 +40,8 @@ import java.util.List;
 public class BillBoardActivity extends BaseActivity {
     private ViewPager mViewPager;
 
-    private MediaPlayer mediaPlayer;
     private MusicControllerFragment ctrlFragment;
     private MusicPlayer player;
-    private int type = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,10 +70,10 @@ public class BillBoardActivity extends BaseActivity {
                 @Override
                 public void onItemClick(final BillBoardBean.Song item, final int position) {
                     if (player != null) {
-                        if (type != frag.getType()) {
+                        if (Application.getApp().getCurrSongType() != frag.getType()) {
                             player.setData(frag.getSongs());
                             player.play(position);
-                            type = frag.getType();
+                            Application.getApp().setCurrSongType(frag.getType());
                             if (ctrlFragment != null) {
                                 ctrlFragment.updatePlaying(true);
                             }
