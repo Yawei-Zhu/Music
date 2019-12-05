@@ -1,13 +1,13 @@
 package com.wind.music.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.wind.music.adapter.SongAdapter;
 import com.wind.music.adapter.SongRecyclerAdapter;
 import com.wind.music.bean.BillBoardBean;
 import com.wind.music.decoration.DefaultDecoration;
@@ -21,8 +21,8 @@ import java.util.List;
 
 public class SongFragment extends ListFragment {
 
-    protected final List<BillBoardBean.Song> songs = new ArrayList<>();
-    protected SongRecyclerAdapter adapter;
+    private final List<BillBoardBean.Song> mSongs = new ArrayList<>();
+    protected SongRecyclerAdapter mSongAdapter;
     protected SongRecyclerAdapter.OnItemClickListener mOnItemClickListener;
 
     @Override
@@ -33,9 +33,9 @@ public class SongFragment extends ListFragment {
         lm.setOrientation(LinearLayoutManager.VERTICAL);
         getRecyclerView().setLayoutManager(lm);
 
-        adapter = new SongRecyclerAdapter(getContext(), songs);
-        adapter.setOnItemClickListener(mOnItemClickListener);
-        getRecyclerView().setAdapter(adapter);
+        mSongAdapter = new SongRecyclerAdapter(getContext(), getSongs());
+        mSongAdapter.setOnItemClickListener(mOnItemClickListener);
+        getRecyclerView().setAdapter(mSongAdapter);
 
         RecyclerView.ItemDecoration decor = new DefaultDecoration();
         getRecyclerView().addItemDecoration(decor);
@@ -49,8 +49,9 @@ public class SongFragment extends ListFragment {
 
     }
 
+    @NonNull
     public List<BillBoardBean.Song> getSongs() {
-        return songs;
+        return mSongs;
     }
 
     public SongRecyclerAdapter.OnItemClickListener getOnItemClickListener() {
@@ -60,9 +61,11 @@ public class SongFragment extends ListFragment {
     public void setOnItemClickListener(SongRecyclerAdapter.OnItemClickListener l) {
         if (mOnItemClickListener != l) {
             this.mOnItemClickListener = l;
-            if (adapter != null) {
-                adapter.setOnItemClickListener(mOnItemClickListener);
+            if (mSongAdapter != null) {
+                mSongAdapter.setOnItemClickListener(mOnItemClickListener);
             }
         }
+    }
+    public void refresh() {
     }
 }

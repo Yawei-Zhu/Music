@@ -20,6 +20,4 @@ public class BaseFragment extends Fragment {
         this.mTitle = title;
     }
 
-    public void refresh() {
-    }
 }

@@ -65,8 +65,8 @@ public class NetSongFragment extends SongFragment {
                 Log.i(TAG, "onRespond: " + response);
                 Gson gson = new Gson();
                 BillBoardBean song = gson.fromJson(response, BillBoardBean.class);
-                adapter.getDatas().addAll(song.getSong_list());
-                adapter.notifyDataSetChanged();
+                mSongAdapter.getDatas().addAll(song.getSong_list());
+                mSongAdapter.notifyDataSetChanged();
             }
         });
     }

@@ -48,7 +48,7 @@ public class LoadLocal {
         }.execute();
     }
 
-    private static List<BillBoardBean.Song> loadData() {
+    public static List<BillBoardBean.Song> loadData() {
         ArrayList<BillBoardBean.Song> data = new ArrayList<>();
 
         ContentResolver resolver = mContext.getContentResolver();

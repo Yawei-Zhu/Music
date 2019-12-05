@@ -1,38 +1,26 @@
-package com.wind.music.view;
+package com.wind.music.activity;
 
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.MediaPlayer;
 import android.os.IBinder;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
-import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.MenuItem;
-import android.view.View;
 
-import com.google.gson.Gson;
 import com.wind.music.Application;
 import com.wind.music.adapter.FragmentAdapter;
 import com.wind.music.adapter.SongRecyclerAdapter;
 import com.wind.music.bean.BillBoardBean;
-import com.wind.music.bean.SongInfoBean;
-import com.wind.music.fragment.BaseFragment;
 import com.wind.music.R;
 import com.wind.music.fragment.MusicControllerFragment;
 import com.wind.music.fragment.NetSongFragment;
 import com.wind.music.service.PlayerService;
 import com.wind.music.util.MusicPlayer;
-import com.wind.music.util.Network;
-import com.wind.music.util.NetworkListener;
-import com.wind.music.util.Urls;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.wind.music.view;
+package com.wind.music.activity;
 
 import android.content.Intent;
 import android.os.Bundle;

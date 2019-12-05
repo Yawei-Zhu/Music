@@ -18,7 +18,7 @@
 
         <service android:name=".service.PlayerService" />
 
-        <activity android:name=".view.StartActivity">
+        <activity android:name="com.wind.music.activity.StartActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,10 +26,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".view.BillBoardActivity"
+            android:name="com.wind.music.activity.LocalActivity"
             android:label="@string/title_activity_top" />
         <activity
-            android:name=".view.LocalActivity"
+            android:name="com.wind.music.activity.BillBoardActivity"
             android:label="@string/title_activity_local" />
     </application>
 

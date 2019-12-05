@@ -1,4 +1,4 @@
-package com.wind.music.view;
+package com.wind.music.activity;
 
 import android.support.v7.app.AppCompatActivity;
 
