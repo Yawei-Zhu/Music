@@ -27,10 +27,10 @@
         </activity>
         <activity
             android:name="com.wind.music.activity.LocalActivity"
-            android:label="@string/title_activity_top" />
+            android:label="@string/title_activity_local" />
         <activity
             android:name="com.wind.music.activity.BillBoardActivity"
-            android:label="@string/title_activity_local" />
+            android:label="@string/title_activity_top" />
     </application>
 
 </manifest>

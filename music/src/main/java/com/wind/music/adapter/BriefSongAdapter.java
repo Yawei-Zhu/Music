@@ -17,10 +17,10 @@ import java.util.List;
  * Created by Administrator on 2017/6/28.
  */
 
-public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
+public class BriefSongAdapter extends CommonAdapter<BillBoardBean.Song> {
 
-    public SongRecyclerAdapter(Context context, List<BillBoardBean.Song> data) {
-        super(context, R.layout.item_song, data);
+    public BriefSongAdapter(Context context, List<BillBoardBean.Song> data) {
+        super(context, R.layout.item_song_brief, data);
     }
 
     @Override
@@ -29,16 +29,22 @@ public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
         tvTitle.setText(song.getTitle());
 
         TextView tvSubtitle = holder.getView(R.id.tv_subtitle);
-        tvSubtitle.setText(song.getArtist_name() + " - " + song.getAlbum());
+        tvSubtitle.setText(song.getArtist_name());
 
-        ImageView ivPic = holder.getView(R.id.iv_pic);
-        Glide.with(mContext).load(song.getPic_small()).into(ivPic);
+        holder.setOnClickListener(R.id.ib_delete, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mOnItemClickListener != null) {
+                    mOnItemClickListener.onItemClick(R.id.ib_delete, song, position);
+                }
+            }
+        });
 
         holder.setOnClickListener(R.id.item_song, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mOnItemClickListener != null) {
-                    mOnItemClickListener.onItemClick(song, position);
+                    mOnItemClickListener.onItemClick(R.id.item_song, song, position);
                 }
             }
         });
@@ -55,6 +61,6 @@ public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
     }
 
     public interface OnItemClickListener {
-        public void onItemClick(BillBoardBean.Song item, int position);
+        public void onItemClick(int viewId, BillBoardBean.Song item, int position);
     }
 }

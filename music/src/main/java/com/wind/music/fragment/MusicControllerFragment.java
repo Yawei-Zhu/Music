@@ -5,32 +5,31 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.SeekBar;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.wind.music.R;
 import com.wind.music.bean.BillBoardBean;
+import com.wind.music.dialog.MusicListDialog;
 import com.wind.music.service.PlayerService;
 import com.wind.music.util.MusicPlayer;
-
-import java.util.Locale;
 
 /**
  * Created by Wind on 2017/8/27.
  */
 
 public class MusicControllerFragment extends BaseFragment {
+    private final String TAG = getClass().getSimpleName();
 
-    private TextView tvCurrent;
-    private TextView tvDuration;
-    private SeekBar sbProgress;
-    private Button btPlay;
-    private Button btMode;
+    private ProgressBar sbProgress;
+    private ImageButton btPlay;
     private TextView tvTitle;
+    private ImageView ivPic;
 
     private MusicPlayer mPlayer;
-    private boolean isProgressTrackingTouch = false;
 
     @Nullable
     @Override
@@ -42,33 +41,29 @@ public class MusicControllerFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        sbProgress = (SeekBar) view.findViewById(R.id.sb_progress);
-        if (sbProgress != null) {
-            sbProgress.setOnSeekBarChangeListener(onSeekBarChangeListener);
+        sbProgress = (ProgressBar) view.findViewById(R.id.sb_progress);
+
+        ImageButton btList = (ImageButton) view.findViewById(R.id.bt_list);
+        if (btList != null) {
+            btList.setOnClickListener(mOnListClickListener);
         }
-
-        tvCurrent = (TextView) view.findViewById(R.id.tv_current);
-        tvDuration = (TextView) view.findViewById(R.id.tv_duration);
-
-        btMode = (Button) view.findViewById(R.id.bt_mode);
-        if (btMode != null) {
-            btMode.setOnClickListener(switchPlayModeListener);
-        }
-
+        ivPic = (ImageView) view.findViewById(R.id.iv_pic);
         tvTitle = (TextView) view.findViewById(R.id.tv_title);
 
-        btPlay = (Button) view.findViewById(R.id.bt_play);
+        btPlay = (ImageButton) view.findViewById(R.id.bt_play);
         if (btPlay != null) {
             btPlay.setOnClickListener(pauseListener);
+            btPlay.setSelected(true);
         }
     }
 
-    private final View.OnClickListener switchPlayModeListener = new View.OnClickListener() {
+    private final View.OnClickListener mOnListClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (mPlayer != null) {
-                int mode = mPlayer.changePlayMode();
-                updateMode(mode);
+                MusicListDialog listDialog = new MusicListDialog();
+                listDialog.setMusicPlayer(mPlayer);
+                listDialog.show(getFragmentManager(), TAG);
             }
         }
     };
@@ -95,62 +90,14 @@ public class MusicControllerFragment extends BaseFragment {
             if (oldSong != song) {
                 updateSong(oldSong = song);
             }
-            updateDuration(mPlayer == null ? 0 : mPlayer.getDuration());
+            updateDuration(song == null ? 100 : song.getFile_duration());
             updatePosition(position);
-        }
-    };
-
-    private final SeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            if (tvCurrent != null) {
-                tvCurrent.setText(time2String(progress));
-            }
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-            isProgressTrackingTouch = true;
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-            isProgressTrackingTouch = false;
-            if (mPlayer != null) {
-                mPlayer.seekTo(seekBar.getProgress());
-            }
         }
     };
 
     public void updatePlaying(boolean isPlaying) {
         if (btPlay != null) {
-            if (isPlaying) {
-                btPlay.setText(R.string.musicplayer_pause);
-            } else {
-                btPlay.setText(R.string.musicplayer_play);
-            }
-        }
-    }
-
-    public void updateMode(int mode) {
-        int s = 0;
-        switch (mode) {
-            case PlayerService.MODE_CYCLE:
-                s = R.string.musicplayer_mode_cycle;
-                break;
-            case PlayerService.MODE_ORDER:
-                s = R.string.musicplayer_mode_order;
-                break;
-            case PlayerService.MODE_RANDOM:
-                s = R.string.musicplayer_mode_random;
-                break;
-            case PlayerService.MODE_SINGLE:
-                s = R.string.musicplayer_mode_single;
-                break;
-        }
-
-        if (btMode != null && s != 0) {
-            btMode.setText(s);
+            btPlay.setActivated(isPlaying);
         }
     }
 
@@ -158,28 +105,12 @@ public class MusicControllerFragment extends BaseFragment {
         if (tvTitle != null) {
             tvTitle.setText(song.getTitle());
         }
-    }
-
-    private String time2String(int time) {
-        String s;
-        int totalSecond = time / 1000;
-        int second = totalSecond % 60;
-        int minute = totalSecond / 60 % 60;
-        int hour = totalSecond / 3600;
-        if (hour == 0) {
-            s = String.format(Locale.CHINA, "%02d:%02d", minute, second);
-        } else {
-            s = String.format(Locale.CHINA, "%d:%02d:%02d", hour, minute, second);
-        }
-        return s;
+        Glide.with(this).load(song.getPic_small()).into(ivPic);
     }
 
     private void updateDuration(int duration) {
         if (sbProgress != null) {
             sbProgress.setMax(duration);
-        }
-        if (tvDuration != null) {
-            tvDuration.setText(time2String(duration));
         }
     }
 
@@ -203,7 +134,8 @@ public class MusicControllerFragment extends BaseFragment {
                 mPlayer.registerOnPlayInfoListener(onPlayInfoListener);
 
                 updatePlaying(player.isPlaying());
-                updateMode(player.getPlayMode());
+            } else {
+                updatePlaying(false);
             }
         }
     }

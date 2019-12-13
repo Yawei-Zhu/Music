@@ -49,7 +49,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = View.inflate(getContext(), R.layout.item_song_local, null);
+        View v = View.inflate(getContext(), R.layout.item_song, null);
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -62,8 +62,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         BillBoardBean.Song song = getData().getSong_list().get(position);
         holder.tvTitle.setText(song.getTitle());
-        holder.tvName.setText(song.getArtist_name());
-        holder.tvAlbum.setText(song.getAlbum());
+        holder.tvSubtitle.setText(song.getArtist_name());
         Glide.with(getContext()).load(song.getPic_small()).into(holder.ivPic);
     }
 
@@ -81,8 +80,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
         ImageView ivPic;
         TextView tvTitle;
-        TextView tvName;
-        TextView tvAlbum;
+        TextView tvSubtitle;
         BillBoardBean.Song song;
 
         public ViewHolder(View itemView) {
@@ -90,14 +88,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             itemView.setTag(this);
             ivPic = (ImageView) itemView.findViewById(R.id.iv_pic);
             tvTitle = (TextView) itemView.findViewById(R.id.tv_title);
-            tvName = (TextView) itemView.findViewById(R.id.tv_name);
-            tvAlbum = (TextView) itemView.findViewById(R.id.tv_album);
+            tvSubtitle = (TextView) itemView.findViewById(R.id.tv_subtitle);
         }
 
         public void bindData(BillBoardBean.Song song, int position) {
             this.song = song;
             tvTitle.setText(song.getTitle());
-            tvName.setText(song.getArtist_name());
+            tvSubtitle.setText(song.getArtist_name());
             if (song.getPic_small() != null) {
                 loadImage(ivPic, song.getPic_small());
             }

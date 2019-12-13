@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_song"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:foregroundGravity="center_vertical">
+
+    <TextView
+        android:id="@+id/tv_title"
+        style="?android:textAppearanceListItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_m"
+        android:maxLines="1"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_subtitle"
+        style="?android:textAppearanceSmall"
+        android:layout_width="@dimen/dimen_none"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_s"
+        android:maxLines="1"
+        android:text=""
+        app:layout_constraintBaseline_toBaselineOf="@+id/tv_title"
+        app:layout_constraintEnd_toStartOf="@+id/ib_delete"
+        app:layout_constraintStart_toEndOf="@id/tv_title" />
+
+    <ImageButton
+        android:id="@+id/ib_delete"
+        style="?android:imageButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/delete" />
+</android.support.constraint.ConstraintLayout>

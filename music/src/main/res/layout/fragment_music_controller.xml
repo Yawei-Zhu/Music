@@ -1,77 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="10dp">
+    app:cardElevation="@dimen/card_elevation">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:id="@+id/cv_controller"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/margin_m">
+        android:layout_height="57dp">
 
-        <LinearLayout
+        <android.support.v4.widget.Space
+            android:id="@+id/space_base"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/tv_current"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00" />
-
-            <SeekBar
-                android:id="@+id/sb_progress"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/tv_duration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ProgressBar
+            android:id="@+id/sb_progress"
+            style="?android:progressBarStyleHorizontal"
+            android:layout_width="@dimen/dimen_none"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_s"
-            android:orientation="horizontal">
+            android:progress="100"
+            app:layout_constraintBottom_toTopOf="@id/space_base"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:maxLines="1"
-                android:textSize="@dimen/text_l" />
+        <ImageView
+            android:id="@+id/iv_pic"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:src="@mipmap/icon_music"
+            android:layout_marginTop="3dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <Button
-                android:id="@+id/bt_mode"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="80dp"
-                android:layout_height="@dimen/button_size"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="@string/musicplayer_mode_cycle"
-                android:textSize="@dimen/text_l" />
+        <ImageButton
+            android:id="@+id/bt_list"
+            style="?android:imageButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/music_player_mode_cycle"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_music_player_menu"
+            app:layout_constraintBottom_toBottomOf="@+id/iv_pic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/iv_pic" />
 
-            <Button
-                android:id="@+id/bt_play"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="80dp"
-                android:layout_height="@dimen/button_size"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="@string/musicplayer_play"
-                android:textSize="@dimen/text_l" />
-        </LinearLayout>
-    </LinearLayout>
+        <ImageButton
+            android:id="@+id/bt_play"
+            style="?android:imageButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/music_player_play"
+            android:src="@drawable/anim_music_player_play_pause"
+            app:layout_constraintEnd_toStartOf="@id/bt_list"
+            app:layout_constraintTop_toTopOf="@+id/bt_list" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            style="?android:textAppearanceMedium"
+            android:layout_width="@dimen/dimen_none"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="@dimen/margin_m"
+            android:maxLines="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bt_play"
+            app:layout_constraintStart_toEndOf="@+id/iv_pic"
+            app:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 </android.support.v7.widget.CardView>

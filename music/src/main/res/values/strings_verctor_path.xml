@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="path_music_player_play" tools:ignore="MissingTranslation">M322,191 L857,500 L857,500 L322,500 Z M322,500 L857,500 L857,500 L322,809 Z</string>
+    <string name="path_music_player_play_rotation" tools:ignore="MissingTranslation">M191,322 L500,322 L500,857 L500,857 Z M500,322 L809,322 L500,857 L500,857 Z</string>
+    <string name="path_music_player_pause" tools:ignore="MissingTranslation">M294,191 L448,191 L448,809 L294,809 Z M552,191 L706,191 L706,809 L552,809 Z</string>
+    <string name="path_music_player_pause_rotation" tools:ignore="MissingTranslation">M191,294 L809,294 L809,448 L191,448 Z M191,552 L809,552 L809,706 L191,706 Z</string>
+    <string name="path_music_player_list" tools:ignore="MissingTranslation">M191,226 L809,226 L809,336 L191,336 Z M191,445 L809,445 L809,555 L191,555 Z M191,664 L809,664 L809,774 L191,774 Z</string>
+    <string name="path_music_player_next" tools:ignore="MissingTranslation">M191,191 L726,500 L191,809 Z M726,191 L809,191 L809,809 L726,809 Z</string>
+    <string name="path_music_player_previous" tools:ignore="MissingTranslation">M191,191 L274,191 L274,809 L191,809 Z M809,191 L809,809 L274,500 Z</string>
+    <string name="path_music_player_exit" tools:ignore="MissingTranslation">M191,500 L500,809 L809,500 L769,450 L500,709 L241,450 Z</string>
+    <string name="path_music_player_exit1" tools:ignore="MissingTranslation">M191,500 L500,809 L809,500</string>
+    <string name="path_delete" tools:ignore="MissingTranslation">M191,241 L450,500 L191,759 L241,809 L500,550 L759,809 L809,759 L550,500 L809,241 L759,191 L500,450 L241,191 Z</string>
+    <string name="path_delete1" tools:ignore="MissingTranslation">M191,191 L809,809 M191,809 L809,191</string>
+</resources>

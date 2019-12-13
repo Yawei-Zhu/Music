@@ -22,7 +22,7 @@ public class PlayInfoSaver {
 
     public void saveMode(int mode) {
         if (mPreference != null) {
-            mPreference.edit().putInt(KEY_MODE, mode).commit();
+            mPreference.edit().putInt(KEY_MODE, mode).apply();
         }
     }
 
@@ -36,7 +36,7 @@ public class PlayInfoSaver {
 
     public void saveIndex(int index) {
         if (mPreference != null) {
-            mPreference.edit().putInt(KEY_INDEX, index).commit();
+            mPreference.edit().putInt(KEY_INDEX, index).apply();
         }
     }
 
@@ -50,7 +50,7 @@ public class PlayInfoSaver {
 
     public void savePosition(int position) {
         if (mPreference != null) {
-            mPreference.edit().putInt(KEY_POSITION, position).commit();
+            mPreference.edit().putInt(KEY_POSITION, position).apply();
         }
     }
 
@@ -64,7 +64,7 @@ public class PlayInfoSaver {
 
     public void release() {
         if (mPreference != null) {
-            mPreference.edit().commit();
+            mPreference.edit().apply();
             mPreference = null;
         }
     }

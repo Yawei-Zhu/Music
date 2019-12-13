@@ -100,8 +100,7 @@ public class LocalActivity extends BaseActivity {
 
     private void bindPlayer() {
         Intent service = new Intent(this, PlayerService.class);
-        int flags = BIND_AUTO_CREATE;
-        bindService(service, playerConnection, flags);
+        bindService(service, playerConnection, BIND_AUTO_CREATE);
     }
 
     private void unbindPlayer() {
@@ -122,6 +121,9 @@ public class LocalActivity extends BaseActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             player = null;
+            if (ctrlFragment != null) {
+                ctrlFragment.setPlayer(player);
+            }
         }
     }
     /*
@@ -175,33 +177,11 @@ public class LocalActivity extends BaseActivity {
                 @Override
                 public void onItemClick(BillBoardBean.Song item, int position) {
                     if (player != null) {
-                        if (0 == Application.getApp().getCurrSongType()) {
-                            if (player.isPlaying()) {
-                                if (player.whatIsPlaying() == position) {
-                                    player.pause();
-                                    if (ctrlFragment != null) {
-                                        ctrlFragment.updatePlaying(false);
-                                    }
-                                } else {
-                                    player.play(position);
-                                }
-                            } else {
-                                if (player.whatIsPlaying() == position) {
-                                    player.play();
-                                } else {
-                                    player.play(position);
-                                }
-                                if (ctrlFragment != null) {
-                                    ctrlFragment.updatePlaying(true);
-                                }
-                            }
-                        } else {
-                            player.setData(songFragment.getSongs());
-                            player.play(position);
-                            Application.getApp().setCurrSongType(0);
-                            if (ctrlFragment != null) {
-                                ctrlFragment.updatePlaying(true);
-                            }
+                        player.setData(songFragment.getSongs());
+                        player.play(position);
+                        Application.getApp().setCurrSongType(0);
+                        if (ctrlFragment != null) {
+                            ctrlFragment.updatePlaying(true);
                         }
                     }
                 }

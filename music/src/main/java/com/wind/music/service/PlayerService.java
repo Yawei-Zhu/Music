@@ -1,5 +1,6 @@
 package com.wind.music.service;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -22,6 +23,8 @@ import com.wind.music.util.Urls;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Administrator on 2017/5/18.
@@ -29,9 +32,9 @@ import java.util.Random;
 
 public class PlayerService extends Service {
     public static final int MODE_CYCLE = 0;
-    public static final int MODE_ORDER = 1;
+    public static final int MODE_SINGLE = 1;
     public static final int MODE_RANDOM = 2;
-    public static final int MODE_SINGLE = 3;
+    public static final int MODE_MAX = 3;
 
     private List<BillBoardBean.Song> songs;
     private PlayInfoSaver saver;
@@ -48,6 +51,8 @@ public class PlayerService extends Service {
         mode = saver.readMode();
         index = saver.readIndex();
         pausePosition = saver.readPosition();
+        Timer mTimer = new Timer();
+        mTimer.schedule(task, 1000, 1000);
     }
 
     @Override
@@ -237,11 +242,6 @@ public class PlayerService extends Service {
                 pausePosition = 0;
             }
             player.stop();
-            synchronized (listenerSet) {
-                updatePlayInfoThread.run = false;
-                listenerSet.notifyAll();
-                updatePlayInfoThread = null;
-            }
             if (saver != null) {
                 saver.savePosition(pausePosition);
             }
@@ -268,18 +268,12 @@ public class PlayerService extends Service {
                 }
                 play(index);
                 break;
-            case MODE_ORDER:
-                index++;
-                if (index < songs.size()) {
-                    play(index);
-                }
+            case MODE_SINGLE:
+                play(index);
                 break;
             case MODE_RANDOM:
                 Random r = new Random();
                 index = r.nextInt(songs.size());
-                play(index);
-                break;
-            case MODE_SINGLE:
                 play(index);
                 break;
         }
@@ -293,8 +287,8 @@ public class PlayerService extends Service {
 
     private int changeMode() {
         mode++;
-        if (mode > 3) {
-            mode = 0;
+        if (mode >= MODE_MAX) {
+            mode = MODE_CYCLE;
         }
         if (saver != null) {
             saver.saveMode(mode);
@@ -322,11 +316,6 @@ public class PlayerService extends Service {
         public void onPrepared(MediaPlayer mp) {
             mp.seekTo(pausePosition);
             pausePosition = 0;
-
-            if (updatePlayInfoThread == null) {
-                updatePlayInfoThread = new UpdatePlayInfoThread();
-                updatePlayInfoThread.start();
-            }
         }
     };
 
@@ -379,6 +368,7 @@ public class PlayerService extends Service {
     };
 
 
+    @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -390,37 +380,17 @@ public class PlayerService extends Service {
             }
         }
     };
-    private UpdatePlayInfoThread updatePlayInfoThread;
 
-    private class UpdatePlayInfoThread extends Thread {
-        public volatile boolean run = true;
-
+    TimerTask task = new TimerTask() {
         @Override
         public void run() {
-            while (run) {
-                synchronized (listenerSet) {
-                    if (listenerSet.isEmpty()) {
-                        try {
-                            listenerSet.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        if (player != null) {
-                            handler.obtainMessage(1, index, player.getCurrentPosition()).sendToTarget();
-                        } else {
-                            run = false;
-                        }
+            synchronized (listenerSet) {
+                if (!listenerSet.isEmpty()) {
+                    if (player != null) {
+                        handler.obtainMessage(1, index, player.getCurrentPosition()).sendToTarget();
                     }
-                }
-
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
         }
-    }
-
+    };
 }
