@@ -1,5 +1,7 @@
 package com.wind.music.fragment;
 
+import android.support.annotation.IdRes;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 
 /**
@@ -8,16 +10,9 @@ import android.support.v4.app.Fragment;
 
 public class BaseFragment extends Fragment {
 
-    public static final CharSequence TITLE_DEFAULT = "";
-
-    private CharSequence mTitle = TITLE_DEFAULT;
-
-    public CharSequence getTitle() {
-        return mTitle;
-    }
-
-    public void setTitle(CharSequence title) {
-        this.mTitle = title;
+    @StringRes
+    public int getTitle() {
+        return 0;
     }
 
 }

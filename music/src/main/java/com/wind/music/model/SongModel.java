@@ -8,6 +8,9 @@ import java.util.List;
  * Created by Administrator on 2017/6/20.
  */
 
-public interface LocalModel extends Model {
-    public void loadData(OnLoadedListener<List<BillBoardBean.Song>> l);
+public interface SongModel extends Model {
+
+    BillBoardBean loadLocalSongs(int minLength);
+    BillBoardBean loadNetworkSongs(int type, int size);
+
 }

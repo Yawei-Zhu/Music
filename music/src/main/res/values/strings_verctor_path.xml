@@ -10,5 +10,6 @@
     <string name="path_music_player_exit" tools:ignore="MissingTranslation">M191,500 L500,809 L809,500 L769,450 L500,709 L241,450 Z</string>
     <string name="path_music_player_exit1" tools:ignore="MissingTranslation">M191,500 L500,809 L809,500</string>
     <string name="path_delete" tools:ignore="MissingTranslation">M191,241 L450,500 L191,759 L241,809 L500,550 L759,809 L809,759 L550,500 L809,241 L759,191 L500,450 L241,191 Z</string>
-    <string name="path_delete1" tools:ignore="MissingTranslation">M191,191 L809,809 M191,809 L809,191</string>
+<!--    <string name="path_delete1" tools:ignore="MissingTranslation">M191,191 L809,809 M191,809 L809,191</string>-->
+    <string name="path_delete1" tools:ignore="MissingTranslation">M282,282 L718,718 M282,718 L718,282</string>
 </resources>

@@ -4,7 +4,6 @@
     <string name="music_player_pause">Pause</string>
 
     <string name="music_player_mode_cycle">Cycle</string>
-    <string name="music_player_mode_order">Order</string>
     <string name="music_player_mode_random">Rand</string>
     <string name="music_player_mode_single">Single</string>
 

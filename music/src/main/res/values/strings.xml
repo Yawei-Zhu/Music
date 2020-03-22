@@ -1,13 +1,14 @@
 <resources>
     <string name="app_name">Music</string>
-    <string name="title_activity_local">LocalMusic</string>
-    <string name="title_activity_top">BillMusic</string>
+    <string name="title_activity_song">Music</string>
+    <string name="title_local">Local Music</string>
     <string name="action_settings">Settings</string>
     <string name="action_close">Close</string>
-    <string name="action_into_billboard">BillBoard</string>
     <string name="action_into_local">Local</string>
-    <string name="section_format">Hello World from section: %1$d</string>
     <string name="delete">Delete</string>
+    <string name="description_album_image">Album Image</string>
+    <string name="title_new">New Music</string>
+    <string name="title_hot">Hot Music</string>
 
 
 </resources>

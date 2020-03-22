@@ -3,7 +3,6 @@ package com.wind.music.dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -18,26 +17,21 @@ import android.widget.ImageButton;
 import com.wind.music.R;
 import com.wind.music.adapter.BriefSongAdapter;
 import com.wind.music.bean.BillBoardBean;
-import com.wind.music.service.PlayerService;
 import com.wind.music.util.MusicPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MusicListDialog extends AppCompatDialogFragment {
-
+public class MusicListDialog extends BaseDialog {
+    public static final String TAG = MusicListDialog.class.getSimpleName();
     private MusicPlayer mMusicPlayer;
     private BriefSongAdapter mSongAdapter;
     private List<BillBoardBean.Song> mSongs = new ArrayList<>();
+    private Button btMode;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -54,7 +48,7 @@ public class MusicListDialog extends AppCompatDialogFragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        super.onViewCreated(view, savedInstanceState );
         initLayout(view);
         initData(savedInstanceState);
     }
@@ -75,12 +69,14 @@ public class MusicListDialog extends AppCompatDialogFragment {
     }
 
     private void initLayout(View view) {
-        final Button btMode = (Button) view.findViewById(R.id.bt_mode);
+        btMode = (Button) view.findViewById(R.id.bt_mode);
         btMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int mode = mMusicPlayer.changePlayMode();
-                updateMode((Button) view, mode);
+                if (mMusicPlayer != null) {
+                    int mode = mMusicPlayer.changePlayMode();
+                    updateMode(mode);
+                }
             }
         });
 
@@ -100,9 +96,12 @@ public class MusicListDialog extends AppCompatDialogFragment {
         mSongAdapter.setOnItemClickListener(new BriefSongAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int viewId, BillBoardBean.Song item, int position) {
+                if (mMusicPlayer == null) {
+                    return;
+                }
                 switch (viewId) {
                     case R.id.ib_delete:
-                        mMusicPlayer.getData().remove(position);
+                        mMusicPlayer.remove(position);
                         mSongs.remove(position);
                         mSongAdapter.notifyDataSetChanged();
                         break;
@@ -125,34 +124,39 @@ public class MusicListDialog extends AppCompatDialogFragment {
 
     private void initData(Bundle savedInstanceState) {
         mSongs.clear();
-        mSongs.addAll(mMusicPlayer.getData());
-        mSongAdapter.notifyDataSetChanged();
+        if (mMusicPlayer != null && mMusicPlayer.getData() != null) {
+            mSongs.addAll(mMusicPlayer.getData());
+        }
+        if (mSongAdapter != null) {
+            mSongAdapter.notifyDataSetChanged();
+        }
+
+        updateMode(mMusicPlayer == null ? MusicPlayer.MODE_CYCLE : mMusicPlayer.getPlayMode());
     }
 
-    public void updateMode(Button button, int mode) {
+    public void updateMode(int mode) {
         int s = 0;
         switch (mode) {
-            case PlayerService.MODE_CYCLE:
+            case MusicPlayer.MODE_CYCLE:
                 s = R.string.music_player_mode_cycle;
                 break;
-            case PlayerService.MODE_RANDOM:
+            case MusicPlayer.MODE_RANDOM:
                 s = R.string.music_player_mode_random;
                 break;
-            case PlayerService.MODE_SINGLE:
+            case MusicPlayer.MODE_SINGLE:
                 s = R.string.music_player_mode_single;
                 break;
         }
 
-        if (button != null && s != 0) {
-            button.setText(s);
+        if (btMode != null && s != 0) {
+            btMode.setText(s);
         }
     }
 
-    public MusicPlayer getMusicPlayer() {
-        return mMusicPlayer;
-    }
-
-    public void setMusicPlayer(MusicPlayer musicPlayer) {
-        this.mMusicPlayer = musicPlayer;
+    public void setPlayer(MusicPlayer player) {
+        if (mMusicPlayer != player) {
+            mMusicPlayer = player;
+            initData(null);
+        }
     }
 }

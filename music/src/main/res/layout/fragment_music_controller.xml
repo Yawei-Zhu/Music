@@ -31,8 +31,9 @@
             android:id="@+id/iv_pic"
             android:layout_width="54dp"
             android:layout_height="54dp"
-            android:src="@mipmap/icon_music"
             android:layout_marginTop="3dp"
+            android:contentDescription="@string/description_album_image"
+            android:src="@mipmap/icon_music"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 

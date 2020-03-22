@@ -1,6 +1,7 @@
 package com.wind.music.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -54,7 +55,7 @@ public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
         this.mOnItemClickListener = l;
     }
 
-    public interface OnItemClickListener {
+    public interface OnItemClickListener extends RecyclerView.OnItemTouchListener {
         public void onItemClick(BillBoardBean.Song item, int position);
     }
 }

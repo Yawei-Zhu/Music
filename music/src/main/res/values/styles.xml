@@ -19,8 +19,8 @@
 
     <style name="AppTheme.Button" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">@drawable/ripple_background</item>
-        <item name="android:minWidth">@dimen/image_button_min</item>
-        <item name="android:minHeight">@dimen/image_button_min</item>
+        <item name="android:minWidth">@dimen/button_min</item>
+        <item name="android:minHeight">@dimen/button_min</item>
     </style>
 
     <style name="AppTheme.ImageButton" parent="Widget.AppCompat.ImageButton">

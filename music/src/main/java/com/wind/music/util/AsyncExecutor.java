@@ -3,6 +3,7 @@ package com.wind.music.util;
 import android.os.Handler;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 public final class AsyncExecutor {
@@ -20,12 +21,16 @@ public final class AsyncExecutor {
     }
 
     private AsyncExecutor() {
-        mExecutorService = Executors.newSingleThreadScheduledExecutor();
+        mExecutorService = Executors.newScheduledThreadPool(4);
         mHandler = new Handler();
     }
 
     public <P, R> void execute(P param, Executable<P, R> executable) {
         mExecutorService.execute(new ExecutableRunnable<>(param, executable));
+    }
+
+    public <P, R> Future<?> submit(P param, Executable<P, R> executable) {
+        return mExecutorService.submit(new ExecutableRunnable<>(param, executable));
     }
 
     public interface Executable<P, R> {

@@ -1,7 +1,10 @@
 package com.wind.music.fragment;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,26 +13,34 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.wind.music.R;
 import com.wind.music.bean.BillBoardBean;
-import com.wind.music.dialog.MusicListDialog;
-import com.wind.music.service.PlayerService;
+import com.wind.music.presenter.ImagePresenter;
+import com.wind.music.presenter.PresenterFactory;
 import com.wind.music.util.MusicPlayer;
 
 /**
  * Created by Wind on 2017/8/27.
  */
 
-public class MusicControllerFragment extends BaseFragment {
-    private final String TAG = getClass().getSimpleName();
+public class MusicControllerFragment extends BaseFragment implements com.wind.music.view.ImageView {
+    private final String TAG = MusicControllerFragment.class.getSimpleName();
 
     private ProgressBar sbProgress;
     private ImageButton btPlay;
+    private ImageButton btList;
     private TextView tvTitle;
     private ImageView ivPic;
-
     private MusicPlayer mPlayer;
+    private ImagePresenter mImagePresenter;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnMusicListShowListener) {
+            mOnMusicListShowListener = (OnMusicListShowListener) context;
+        }
+    }
 
     @Nullable
     @Override
@@ -40,10 +51,29 @@ public class MusicControllerFragment extends BaseFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mImagePresenter = PresenterFactory.createImagePresenter(this);
+        initLayout(view);
+    }
 
+    @Override
+    public void onDestroyView() {
+        setPlayer(null);
+        finishLayout();
+        mImagePresenter.setView(null);
+        mImagePresenter = null;
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDetach() {
+        mOnMusicListShowListener = null;
+        super.onDetach();
+    }
+
+    private void initLayout(View view) {
         sbProgress = (ProgressBar) view.findViewById(R.id.sb_progress);
 
-        ImageButton btList = (ImageButton) view.findViewById(R.id.bt_list);
+        btList = (ImageButton) view.findViewById(R.id.bt_list);
         if (btList != null) {
             btList.setOnClickListener(mOnListClickListener);
         }
@@ -53,17 +83,30 @@ public class MusicControllerFragment extends BaseFragment {
         btPlay = (ImageButton) view.findViewById(R.id.bt_play);
         if (btPlay != null) {
             btPlay.setOnClickListener(pauseListener);
-            btPlay.setSelected(true);
+        }
+    }
+
+    private void finishLayout() {
+        sbProgress = null;
+
+        if (btList != null) {
+            btList.setOnClickListener(null);
+            btList = null;
+        }
+        ivPic = null;
+        tvTitle = null;
+
+        if (btPlay != null) {
+            btPlay.setOnClickListener(null);
+            btPlay = null;
         }
     }
 
     private final View.OnClickListener mOnListClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (mPlayer != null) {
-                MusicListDialog listDialog = new MusicListDialog();
-                listDialog.setMusicPlayer(mPlayer);
-                listDialog.show(getFragmentManager(), TAG);
+            if (mOnMusicListShowListener != null) {
+                mOnMusicListShowListener.onMusicListShow(MusicControllerFragment.this);
             }
         }
     };
@@ -74,24 +117,25 @@ public class MusicControllerFragment extends BaseFragment {
             if (mPlayer != null && mPlayer.getData() != null) {
                 if (mPlayer.isPlaying()) {
                     mPlayer.pause();
-                    updatePlaying(false);
                 } else {
                     mPlayer.play();
-                    updatePlaying(true);
                 }
             }
         }
     };
-    private final MusicPlayer.OnPlayInfoListener onPlayInfoListener = new MusicPlayer.OnPlayInfoListener() {
-        BillBoardBean.Song oldSong = null;
+
+    private MusicPlayer.OnPlayInfoListener onPlayInfoListener = new MusicPlayer.OnPlayInfoListener() {
+        BillBoardBean.Song mOldSong = null;
 
         @Override
         public void onPlayInfo(BillBoardBean.Song song, int position) {
-            if (oldSong != song) {
-                updateSong(oldSong = song);
+            if (mOldSong != song) {
+                BillBoardBean.Song oldSong = mOldSong;
+                updateSong(oldSong, song);
+                mOldSong = song;
             }
-            updateDuration(song == null ? 100 : song.getFile_duration());
             updatePosition(position);
+            updatePlaying(mPlayer != null && mPlayer.isPlaying());
         }
     };
 
@@ -101,16 +145,27 @@ public class MusicControllerFragment extends BaseFragment {
         }
     }
 
-    private void updateSong(BillBoardBean.Song song) {
+    private void updateSong(BillBoardBean.Song oldSong, BillBoardBean.Song newSong) {
         if (tvTitle != null) {
-            tvTitle.setText(song.getTitle());
+            tvTitle.setText(newSong == null ? "" : newSong.getTitle());
         }
-        Glide.with(this).load(song.getPic_small()).into(ivPic);
-    }
 
-    private void updateDuration(int duration) {
         if (sbProgress != null) {
-            sbProgress.setMax(duration);
+            if (newSong == null) {
+                sbProgress.setMax(100);
+            } else if (newSong.isIs_local()) {
+                sbProgress.setMax(newSong.getFile_duration());
+            } else {
+                sbProgress.setMax(newSong.getFile_duration() * 1000);
+            }
+        }
+
+        if (oldSong != null && oldSong.getPic_small() != null) {
+            mImagePresenter.cancel(oldSong.getPic_small());
+        }
+
+        if (newSong != null && newSong.getPic_small() != null) {
+            mImagePresenter.load(newSong.getPic_small());
         }
     }
 
@@ -120,23 +175,28 @@ public class MusicControllerFragment extends BaseFragment {
         }
     }
 
-    public MusicPlayer getPlayer() {
-        return mPlayer;
-    }
-
     public void setPlayer(MusicPlayer player) {
         if (mPlayer != player) {
             if (mPlayer != null) {
-                mPlayer.unregisterOnPlayInfoListener(onPlayInfoListener);
+                mPlayer.removeOnPlayInfoListener(onPlayInfoListener);
             }
             mPlayer = player;
             if (mPlayer != null) {
-                mPlayer.registerOnPlayInfoListener(onPlayInfoListener);
-
-                updatePlaying(player.isPlaying());
+                mPlayer.addOnPlayInfoListener(onPlayInfoListener);
             } else {
-                updatePlaying(false);
+                onPlayInfoListener.onPlayInfo(null, 0);
             }
         }
+    }
+
+    private OnMusicListShowListener mOnMusicListShowListener;
+
+    @Override
+    public void onLoaded(String path, Bitmap bitmap) {
+        ivPic.setImageBitmap(bitmap);
+    }
+
+    public interface OnMusicListShowListener {
+        void onMusicListShow(MusicControllerFragment musicController);
     }
 }

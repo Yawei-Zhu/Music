@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.wind.music.activity.BillBoardActivity">
+    tools:context="com.wind.music.activity.SongActivity">
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dimen_none"
+        android:layout_height="0dp"
         android:layout_weight="1">
 
         <android.support.design.widget.AppBarLayout
@@ -26,24 +26,25 @@
                 android:background="?attr/colorPrimary"
                 app:layout_scrollFlags="scroll|enterAlways"
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-            <android.support.design.widget.TabLayout
-                android:id="@+id/tab_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
         </android.support.design.widget.AppBarLayout>
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/container"
+        <FrameLayout
+            android:id="@+id/fragment_song"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+<!--        <fragment-->
+<!--            android:id="@+id/song_fragment"-->
+<!--            android:name="com.wind.music.fragment.LocalSongFragment"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
     </android.support.design.widget.CoordinatorLayout>
 
-    <fragment
-        android:id="@+id/ctrl_fragment"
-        android:name="com.wind.music.fragment.MusicControllerFragment"
+    <FrameLayout
+        android:id="@+id/fragment_controller"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="57dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
 </LinearLayout>

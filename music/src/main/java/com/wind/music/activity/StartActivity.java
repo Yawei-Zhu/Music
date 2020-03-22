@@ -12,7 +12,7 @@ public class StartActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
-        startActivity(new Intent(this, LocalActivity.class));
+        startActivity(new Intent(this, MainActivity.class));
         finish();
     }
 }

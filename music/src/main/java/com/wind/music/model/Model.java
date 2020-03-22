@@ -5,8 +5,4 @@ package com.wind.music.model;
  */
 
 public interface Model {
-
-    public interface OnLoadedListener<R> {
-        public void onLoaded(R result);
-    }
 }

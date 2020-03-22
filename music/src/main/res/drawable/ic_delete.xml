@@ -9,14 +9,14 @@
         android:pivotX="500"
         android:pivotY="500">
 
-        <path
-            android:name="path_delete"
-            android:fillColor="@color/color_image"
-            android:pathData="@string/path_delete"/>
 <!--        <path-->
 <!--            android:name="path_delete"-->
-<!--            android:strokeColor="@color/color_image"-->
-<!--            android:strokeWidth="71"-->
-<!--            android:pathData="@string/path_delete1"/>-->
+<!--            android:fillColor="@color/color_image"-->
+<!--            android:pathData="@string/path_delete"/>-->
+        <path
+            android:name="path_delete"
+            android:strokeColor="@color/color_image"
+            android:strokeWidth="40"
+            android:pathData="@string/path_delete1"/>
     </group>
 </vector>

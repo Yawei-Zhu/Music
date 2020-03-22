@@ -91,6 +91,7 @@ public class BillBoardBean extends BaseBean {
         private String title;
         private String path;
         private int file_duration;
+        private boolean is_local;
 
         private int artist_id;
         private String artist_name;
@@ -135,6 +136,14 @@ public class BillBoardBean extends BaseBean {
 
         public void setFile_duration(int file_duration) {
             this.file_duration = file_duration;
+        }
+
+        public boolean isIs_local() {
+            return is_local;
+        }
+
+        public void setIs_local(boolean is_local) {
+            this.is_local = is_local;
         }
 
         public int getArtist_id() {
