@@ -9,8 +9,15 @@ import java.util.List;
  */
 
 public interface MusicPlayer {
+    int MODE_CYCLE = 0;
+    int MODE_SINGLE = 1;
+    int MODE_RANDOM = 2;
+    int MODE_MAX = 3;
+
     void setData(List<BillBoardBean.Song> data);
     List<BillBoardBean.Song> getData();
+    int insert(int index, BillBoardBean.Song song);
+    BillBoardBean.Song remove(int index);
     void play();
     void play(int index);
     void pause();
@@ -23,8 +30,8 @@ public interface MusicPlayer {
     void next();
     int changePlayMode();
     int getPlayMode();
-    void registerOnPlayInfoListener(OnPlayInfoListener listener);
-    void unregisterOnPlayInfoListener(OnPlayInfoListener listener);
+    void addOnPlayInfoListener(OnPlayInfoListener listener);
+    void removeOnPlayInfoListener(OnPlayInfoListener listener);
 
     public interface OnPlayInfoListener {
         void onPlayInfo(BillBoardBean.Song song, int position);

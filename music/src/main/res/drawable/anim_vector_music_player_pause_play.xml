@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_music_player_pause">
+
+    <target
+        android:animation="@animator/animator_music_player_pause_play_path"
+        android:name="path_pause" />
+
+    <target
+        android:animation="@animator/animator_rotate_negative_90"
+        android:name="group_pause" />
+</animated-vector>

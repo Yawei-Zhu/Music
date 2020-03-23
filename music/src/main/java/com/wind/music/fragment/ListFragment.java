@@ -34,6 +34,13 @@ public class ListFragment extends BaseFragment {
         return mRefreshLayout;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mRefreshLayout = null;
+        mRecyclerView = null;
+    }
+
     public SwipeRefreshLayout getRefreshLayout() {
         return mRefreshLayout;
     }

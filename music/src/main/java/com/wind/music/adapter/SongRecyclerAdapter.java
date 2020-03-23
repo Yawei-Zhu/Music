@@ -1,8 +1,7 @@
 package com.wind.music.adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,7 +21,7 @@ import java.util.List;
 public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
 
     public SongRecyclerAdapter(Context context, List<BillBoardBean.Song> data) {
-        super(context, R.layout.item_song_local, data);
+        super(context, R.layout.item_song, data);
     }
 
     @Override
@@ -30,16 +29,13 @@ public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
         TextView tvTitle = holder.getView(R.id.tv_title);
         tvTitle.setText(song.getTitle());
 
-        TextView tvName = holder.getView(R.id.tv_name);
-        tvName.setText(song.getArtist_name());
-
-        TextView tvAlbum = holder.getView(R.id.tv_album);
-        tvAlbum.setText(song.getAlbum());
+        TextView tvSubtitle = holder.getView(R.id.tv_subtitle);
+        tvSubtitle.setText(song.getArtist_name() + " - " + song.getAlbum());
 
         ImageView ivPic = holder.getView(R.id.iv_pic);
         Glide.with(mContext).load(song.getPic_small()).into(ivPic);
 
-        holder.setOnClickListener(R.id.item_song_local, new View.OnClickListener() {
+        holder.setOnClickListener(R.id.item_song, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mOnItemClickListener != null) {
@@ -59,7 +55,7 @@ public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
         this.mOnItemClickListener = l;
     }
 
-    public interface OnItemClickListener {
+    public interface OnItemClickListener extends RecyclerView.OnItemTouchListener {
         public void onItemClick(BillBoardBean.Song item, int position);
     }
 }

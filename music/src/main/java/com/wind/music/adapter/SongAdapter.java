@@ -1,152 +1,116 @@
 package com.wind.music.adapter;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.wind.music.R;
 import com.wind.music.bean.BillBoardBean;
+import com.wind.music.presenter.ImagePresenter;
+import com.wind.music.presenter.PresenterFactory;
+
+import java.util.List;
 
 /**
  * Created by Administrator on 2017/4/24.
  */
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
+    private final String TAG = SongAdapter.class.getSimpleName();
 
-    private Context mContext;
-    private BillBoardBean mData;
+    private List<BillBoardBean.Song> mData;
+    private int count = 0;
 
-    public SongAdapter(Context context, BillBoardBean data) {
-        setContext(context);
+    public SongAdapter(List<BillBoardBean.Song> data) {
         setData(data);
     }
 
-    public void setContext(Context context) {
-        if (context == null) {
-            throw new IllegalAccessError("context is null");
-        }
-        this.mContext = context;
-    }
-
-    public Context getContext() {
-        return mContext;
-    }
-
-    public void setData(BillBoardBean data) {
+    public void setData(List<BillBoardBean.Song> data) {
         this.mData = data;
     }
 
-    public BillBoardBean getData() {
+    public List<BillBoardBean.Song> getData() {
         return mData;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = View.inflate(getContext(), R.layout.item_song_local, null);
+        count++;
+        Log.d(TAG, "onCreateViewHolder: count=" + count);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View v = inflater.inflate(R.layout.item_song, parent, false);
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         v.setLayoutParams(params);
-        v.setOnClickListener(_OnClickListener);
         return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        BillBoardBean.Song song = getData().getSong_list().get(position);
-        holder.tvTitle.setText(song.getTitle());
-        holder.tvName.setText(song.getArtist_name());
-        holder.tvAlbum.setText(song.getAlbum());
-        Glide.with(getContext()).load(song.getPic_small()).into(holder.ivPic);
+        BillBoardBean.Song song = mData.get(position);
+        holder.onBind(song, position);
+    }
+
+    @Override
+    public void onViewRecycled(ViewHolder holder) {
+        holder.onRecycled();
+        super.onViewRecycled(holder);
     }
 
     @Override
     public int getItemCount() {
         int count = 0;
         try {
-            count = mData.getSong_list().size();
+            count = mData.size();
         } catch (NullPointerException e) {
         }
         return count;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-
+    public static class ViewHolder extends RecyclerView.ViewHolder implements com.wind.music.view.ImageView {
+        private final String TAG = ViewHolder.class.getSimpleName();
+        ImagePresenter mPresenter;
         ImageView ivPic;
         TextView tvTitle;
-        TextView tvName;
-        TextView tvAlbum;
-        BillBoardBean.Song song;
+        TextView tvSubtitle;
+        BillBoardBean.Song mSong;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            itemView.setTag(this);
-            ivPic = (ImageView) itemView.findViewById(R.id.iv_pic);
             tvTitle = (TextView) itemView.findViewById(R.id.tv_title);
-            tvName = (TextView) itemView.findViewById(R.id.tv_name);
-            tvAlbum = (TextView) itemView.findViewById(R.id.tv_album);
+            tvSubtitle = (TextView) itemView.findViewById(R.id.tv_subtitle);
+            ivPic = (ImageView) itemView.findViewById(R.id.iv_pic);
         }
 
-        public void bindData(BillBoardBean.Song song, int position) {
-            this.song = song;
-            tvTitle.setText(song.getTitle());
-            tvName.setText(song.getArtist_name());
-            if (song.getPic_small() != null) {
-                loadImage(ivPic, song.getPic_small());
+        public void onBind(BillBoardBean.Song song, int position) {
+            mPresenter = PresenterFactory.createImagePresenter(this);
+            mSong = song;
+            tvTitle.setText(mSong.getTitle());
+            tvSubtitle.setText(mSong.getArtist_name());
+            if (mSong.getPic_small() != null) {
+                mPresenter.load(mSong.getPic_small());
             }
         }
 
-        private void loadImage(final ImageView iv, String uri) {
-            iv.setImageBitmap(null);
-            new AsyncTask<String, Void, Bitmap>() {
-                @Override
-                protected Bitmap doInBackground(String... params) {
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inJustDecodeBounds = true;
-                    BitmapFactory.decodeFile(params[0], options);
-                    int h = options.outHeight;
-                    int w = options.outWidth;
-                    options.inSampleSize = Math.min(h / 200, w / 200);
-                    options.inJustDecodeBounds = false;
-                    return BitmapFactory.decodeFile(params[0], options);
-                }
-
-                @Override
-                protected void onPostExecute(Bitmap bitmap) {
-                    iv.setImageBitmap(bitmap);
-                }
-            }.execute(uri);
+        public void onRecycled() {
+            tvTitle.setText(null);
+            tvSubtitle.setText(null);
+            ivPic.setImageResource(R.mipmap.icon_music);
+            mPresenter.cancel(mSong.getPic_small());
+            mSong = null;
+            mPresenter.setView(null);
+            mPresenter = null;
         }
-    }
 
-    private View.OnClickListener _OnClickListener = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {
-            ViewHolder holder = (ViewHolder) v.getTag();
-            if (holder != null && mOnItemClickListener != null) {
-                mOnItemClickListener.onItemClick(holder.song, holder.getAdapterPosition());
-            }
+        public void onLoaded(String path, Bitmap bitmap) {
+            ivPic.setImageBitmap(bitmap);
         }
-    };
-
-    private OnItemClickListener mOnItemClickListener;
-
-    public OnItemClickListener getOnItemClickListener() {
-        return mOnItemClickListener;
-    }
-
-    public void setOnItemClickListener(OnItemClickListener l) {
-        this.mOnItemClickListener = l;
-    }
-
-    public interface OnItemClickListener {
-        public void onItemClick(BillBoardBean.Song item, int position);
     }
 }

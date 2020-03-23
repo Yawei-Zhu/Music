@@ -66,17 +66,13 @@ public class Network {
         }
     }
 
-    public static void load(
-            String url,
-            NetworkListener listener) {
-
+    public static void load(String url, NetworkListener listener) {
         load(Request.Method.GET, url, listener);
     }
 
-    public static void load(
-            int method,
-            final String url,
-            final NetworkListener listener) {
+    public static void load(int method,
+                            final String url,
+                            final NetworkListener listener) {
 
         int type = getNetworkType();
         if (type == 0) {

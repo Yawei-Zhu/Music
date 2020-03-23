@@ -13,14 +13,14 @@ android {
     defaultConfig {
         applicationId "com.wind.music"
         minSdkVersion 21
-        targetSdkVersion 23
+        targetSdkVersion 24
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         release {
@@ -51,5 +51,5 @@ dependencies {
     compile 'com.zhy:base-adapter:3.0.3'
     compile 'com.zhy:base-rvadapter:3.0.3'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.+'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
 }

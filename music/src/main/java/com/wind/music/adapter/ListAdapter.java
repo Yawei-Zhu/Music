@@ -85,7 +85,7 @@ public class ListAdapter<E> extends android.widget.BaseAdapter {
     }
 
     /**
-     * this is a item view sorter, if you want a multi type adapter.
+     * this is a item view sorter, if you want a multi type mSongAdapter.
      * @param <T> same as E of ListAdapter
      */
     public interface ItemViewSorter<T> {
