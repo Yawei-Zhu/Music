@@ -3,7 +3,6 @@ package com.wind.music;
 import android.content.Intent;
 
 import com.wind.music.service.PlayerService;
-import com.wind.music.util.Network;
 import com.wind.music.util.Setting;
 
 /**
@@ -20,7 +19,6 @@ public class Application extends android.app.Application {
         super.onCreate();
         app = this;
         mSetting = new Setting(this);
-        Network.init(this);
         Intent playerService = new Intent(this, PlayerService.class);
         startService(playerService);
     }
@@ -29,7 +27,6 @@ public class Application extends android.app.Application {
     public void onTerminate() {
         Intent playerService = new Intent(this, PlayerService.class);
         stopService(playerService);
-        Network.release();
         app = null;
         super.onTerminate();
     }
