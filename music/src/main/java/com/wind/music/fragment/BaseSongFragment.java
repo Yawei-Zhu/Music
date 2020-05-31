@@ -11,6 +11,7 @@ import android.view.View;
 import com.wind.music.adapter.SongAdapter;
 import com.wind.music.adapter.SongRecyclerAdapter;
 import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 import com.wind.music.decoration.DefaultDecoration;
 import com.wind.music.util.OnItemClickListener;
 
@@ -23,7 +24,7 @@ import java.util.List;
 
 public class BaseSongFragment extends ListFragment {
 
-    private final List<BillBoardBean.Song> mSongs = new ArrayList<>();
+    private final List<Song> mSongs = new ArrayList<>();
     protected SongAdapter mSongAdapter;
     private OnItemClickListener mOnItemClickListener;
 
@@ -58,10 +59,20 @@ public class BaseSongFragment extends ListFragment {
             }
         });
 
+        refresh();
+    }
+
+    @Override
+    public void onDestroyView() {
+        getRecyclerView().setAdapter(null);
+        mSongAdapter = null;
+        getRecyclerView().removeOnItemTouchListener(mOnItemClickListener);
+        mOnItemClickListener = null;
+        super.onDestroyView();
     }
 
     @NonNull
-    public List<BillBoardBean.Song> getSongs() {
+    public List<Song> getSongs() {
         return mSongs;
     }
 
@@ -78,6 +89,6 @@ public class BaseSongFragment extends ListFragment {
 
     private OnSongClickListener mOnSongClickListener;
     public interface OnSongClickListener {
-        void onSongClick(List<BillBoardBean.Song> songs, int position);
+        void onSongClick(List<Song> songs, int position);
     }
 }

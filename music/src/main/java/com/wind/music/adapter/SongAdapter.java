@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.wind.music.R;
 import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 import com.wind.music.presenter.ImagePresenter;
 import com.wind.music.presenter.PresenterFactory;
 
@@ -23,18 +24,18 @@ import java.util.List;
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     private final String TAG = SongAdapter.class.getSimpleName();
 
-    private List<BillBoardBean.Song> mData;
+    private List<Song> mData;
     private int count = 0;
 
-    public SongAdapter(List<BillBoardBean.Song> data) {
+    public SongAdapter(List<Song> data) {
         setData(data);
     }
 
-    public void setData(List<BillBoardBean.Song> data) {
+    public void setData(List<Song> data) {
         this.mData = data;
     }
 
-    public List<BillBoardBean.Song> getData() {
+    public List<Song> getData() {
         return mData;
     }
 
@@ -53,7 +54,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        BillBoardBean.Song song = mData.get(position);
+        Song song = mData.get(position);
         holder.onBind(song, position);
     }
 
@@ -79,7 +80,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         ImageView ivPic;
         TextView tvTitle;
         TextView tvSubtitle;
-        BillBoardBean.Song mSong;
+        Song mSong;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -88,11 +89,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             ivPic = (ImageView) itemView.findViewById(R.id.iv_pic);
         }
 
-        public void onBind(BillBoardBean.Song song, int position) {
+        public void onBind(Song song, int position) {
             mPresenter = PresenterFactory.createImagePresenter(this);
             mSong = song;
             tvTitle.setText(mSong.getTitle());
-            tvSubtitle.setText(mSong.getArtist_name());
+            tvSubtitle.setText(mSong.getAuthor());
             if (mSong.getPic_small() != null) {
                 mPresenter.load(mSong.getPic_small());
             }

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.wind.music.R;
-import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 import com.wind.music.presenter.ImagePresenter;
 import com.wind.music.presenter.PresenterFactory;
 import com.wind.music.util.MusicPlayer;
@@ -125,12 +124,12 @@ public class MusicControllerFragment extends BaseFragment implements com.wind.mu
     };
 
     private MusicPlayer.OnPlayInfoListener onPlayInfoListener = new MusicPlayer.OnPlayInfoListener() {
-        BillBoardBean.Song mOldSong = null;
+        Song mOldSong = null;
 
         @Override
-        public void onPlayInfo(BillBoardBean.Song song, int position) {
+        public void onPlayInfo(Song song, int position) {
             if (mOldSong != song) {
-                BillBoardBean.Song oldSong = mOldSong;
+                Song oldSong = mOldSong;
                 updateSong(oldSong, song);
                 mOldSong = song;
             }
@@ -145,7 +144,7 @@ public class MusicControllerFragment extends BaseFragment implements com.wind.mu
         }
     }
 
-    private void updateSong(BillBoardBean.Song oldSong, BillBoardBean.Song newSong) {
+    private void updateSong(Song oldSong, Song newSong) {
         if (tvTitle != null) {
             tvTitle.setText(newSong == null ? "" : newSong.getTitle());
         }
@@ -153,7 +152,7 @@ public class MusicControllerFragment extends BaseFragment implements com.wind.mu
         if (sbProgress != null) {
             if (newSong == null) {
                 sbProgress.setMax(100);
-            } else if (newSong.isIs_local()) {
+            } else if (newSong.isLocal()) {
                 sbProgress.setMax(newSong.getFile_duration());
             } else {
                 sbProgress.setMax(newSong.getFile_duration() * 1000);

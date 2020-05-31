@@ -39,8 +39,9 @@ public final class AsyncExecutor {
     }
 
     private final class ExecutableRunnable<P, R>  implements Runnable {
-        P mParam;
-        Executable<P, R> mExecutable;
+        private final Executable<P, R> mExecutable;
+        private final P mParam;
+        private R result;
 
         private ExecutableRunnable(P param, Executable<P, R> executable) {
             mParam = param;
@@ -49,13 +50,15 @@ public final class AsyncExecutor {
 
         @Override
         public void run() {
-            final R result = mExecutable.onLoading(mParam);
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mExecutable.onLoaded(mParam, result);
-                }
-            });
+            result = mExecutable.onLoading(mParam);
+            mHandler.post(mRunnable);
         }
+
+        private final Runnable mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mExecutable.onLoaded(mParam, result);
+            }
+        };
     }
 }

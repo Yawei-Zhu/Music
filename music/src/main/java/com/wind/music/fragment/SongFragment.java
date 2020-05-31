@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.wind.music.R;
 import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 import com.wind.music.presenter.SongPresenter;
 import com.wind.music.presenter.PresenterFactory;
 import com.wind.music.view.SongView;
@@ -35,13 +36,12 @@ public class SongFragment extends BaseSongFragment implements SongView {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPresenter = PresenterFactory.createLocalPresenter(this);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mPresenter = PresenterFactory.createLocalPresenter(this);
-        refresh();
     }
 
     @Override
@@ -89,11 +89,10 @@ public class SongFragment extends BaseSongFragment implements SongView {
     }
 
     @Override
-    public void onLoaded(int type, BillBoardBean bean) {
+    public void onLoaded(int type, List<Song> result) {
         getRefreshLayout().setRefreshing(false);
-        if (bean != null) {
-            assert null != bean.getSong_list();
-            mSongAdapter.getData().addAll(bean.getSong_list());
+        if (result != null) {
+            mSongAdapter.getData().addAll(result);
             mSongAdapter.notifyDataSetChanged();
         }
     }

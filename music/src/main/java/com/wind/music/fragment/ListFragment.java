@@ -36,9 +36,9 @@ public class ListFragment extends BaseFragment {
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
         mRefreshLayout = null;
         mRecyclerView = null;
+        super.onDestroyView();
     }
 
     public SwipeRefreshLayout getRefreshLayout() {

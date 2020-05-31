@@ -1,8 +1,9 @@
 package com.wind.music.presenter.impl;
 
+import com.wind.music.Application;
 import com.wind.music.bean.SongInfoBean;
 import com.wind.music.model.ModelFactory;
-import com.wind.music.model.PlayerModel;
+import com.wind.music.model.SongModel;
 import com.wind.music.presenter.PlayerPresenter;
 import com.wind.music.util.AsyncExecutor;
 import com.wind.music.util.Utils;
@@ -14,25 +15,25 @@ import java.util.concurrent.Future;
 
 public class PlayerPresenterImpl implements PlayerPresenter {
     private PlayerView mView;
-    private PlayerModel mModel;
-    private HashMap<Integer, Future<?>> mLoadMap = new HashMap<>();
+    private SongModel mModel;
+    private HashMap<String, Future<?>> mLoadMap = new HashMap<>();
     private HashMap<String, Future<?>> mCacheMap = new HashMap<>();
 
     public PlayerPresenterImpl() {
-        mModel = ModelFactory.createPlayerModel();
+        mModel = ModelFactory.createSongModel(Application.getApp());
     }
 
     @Override
-    public void loadSongInfo(int songId) {
+    public void loadSongInfo(String songId) {
         if (!mLoadMap.containsKey(songId)) {
-            Future<?> future = AsyncExecutor.of().submit(songId, new AsyncExecutor.Executable<Integer, SongInfoBean>() {
+            Future<?> future = AsyncExecutor.of().submit(songId, new AsyncExecutor.Executable<String, SongInfoBean>() {
                 @Override
-                public SongInfoBean onLoading(Integer param) {
+                public SongInfoBean onLoading(String param) {
                     return mModel.loadSongInfo(param);
                 }
 
                 @Override
-                public void onLoaded(Integer param, SongInfoBean result) {
+                public void onLoaded(String param, SongInfoBean result) {
                     if (mLoadMap.remove(param) != null) {
                         if (mView != null) {
                             mView.onSongInfoLoaded(param, result);
@@ -45,8 +46,8 @@ public class PlayerPresenterImpl implements PlayerPresenter {
     }
 
     @Override
-    public void cancelSongInfo(int songId) {
-        Future<?> value = mLoadMap.get(songId);
+    public void cancelSongInfo(String songId) {
+        Future<?> value = mLoadMap.remove(songId);
         if (value != null) {
             value.cancel(false);
         }
@@ -79,7 +80,7 @@ public class PlayerPresenterImpl implements PlayerPresenter {
 
     @Override
     public void cancelSong(String path) {
-        Future<?> value = mCacheMap.get(path);
+        Future<?> value = mCacheMap.remove(path);
         if (value != null) {
             value.cancel(false);
         }

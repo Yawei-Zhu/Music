@@ -1,6 +1,9 @@
 package com.wind.music.model;
 
 import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.SearchBean;
+import com.wind.music.bean.Song;
+import com.wind.music.bean.SongInfoBean;
 
 import java.util.List;
 
@@ -10,7 +13,14 @@ import java.util.List;
 
 public interface SongModel extends Model {
 
-    BillBoardBean loadLocalSongs(int minLength);
+    List<Song> loadLocalSongs(int minLength);
+
     BillBoardBean loadNetworkSongs(int type, int size);
+
+    SongInfoBean loadSongInfo(String songId);
+
+    String cacheSong(String path);
+
+    SearchBean query(String key);
 
 }

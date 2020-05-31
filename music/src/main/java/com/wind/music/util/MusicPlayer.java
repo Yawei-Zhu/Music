@@ -1,6 +1,6 @@
 package com.wind.music.util;
 
-import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 
 import java.util.List;
 
@@ -14,10 +14,10 @@ public interface MusicPlayer {
     int MODE_RANDOM = 2;
     int MODE_MAX = 3;
 
-    void setData(List<BillBoardBean.Song> data);
-    List<BillBoardBean.Song> getData();
-    int insert(int index, BillBoardBean.Song song);
-    BillBoardBean.Song remove(int index);
+    void setData(List<Song> data);
+    List<Song> getData();
+    int insert(int index, Song song);
+    Song remove(int index);
     void play();
     void play(int index);
     void pause();
@@ -34,7 +34,7 @@ public interface MusicPlayer {
     void removeOnPlayInfoListener(OnPlayInfoListener listener);
 
     public interface OnPlayInfoListener {
-        void onPlayInfo(BillBoardBean.Song song, int position);
+        void onPlayInfo(Song song, int position);
     }
 
 }

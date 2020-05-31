@@ -1,6 +1,7 @@
 package com.wind.music.view;
 
 import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 
 import java.util.List;
 
@@ -10,6 +11,6 @@ import java.util.List;
 
 public interface SongView extends View {
 
-    void onLoaded(int type, BillBoardBean songs);
+    void onLoaded(int type, List<Song> songs);
 
 }

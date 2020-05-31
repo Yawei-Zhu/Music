@@ -5,7 +5,7 @@ import com.wind.music.presenter.PlayerPresenter;
 
 public interface PlayerView extends View {
 
-    void onSongInfoLoaded(int songId, SongInfoBean songInfo);
+    void onSongInfoLoaded(String songId, SongInfoBean songInfo);
 
     void onSongCaching(String srcPath, String cachePath, int percent);
 

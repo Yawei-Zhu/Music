@@ -26,7 +26,7 @@ import com.wind.music.util.MusicPlayer;
 import com.wind.music.util.Toasts;
 
 public class MainActivity extends BaseActivity implements MusicControllerFragment.OnMusicListShowListener {
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private final String TAG = MainActivity.class.getSimpleName();
     MusicPlayer mMusicPlayer;
     MusicControllerFragment ctrlFragment;
 
@@ -78,6 +78,9 @@ public class MainActivity extends BaseActivity implements MusicControllerFragmen
             case R.id.action_setting:
                 //startActivity(new Intent(this, SettingActivity.class));
                 break;
+            case R.id.action_search:
+                SearchActivity.start(this);
+                break;
             default:
                 return false;
         }
@@ -112,11 +115,11 @@ public class MainActivity extends BaseActivity implements MusicControllerFragmen
         public void onServiceDisconnected(ComponentName name) {
             mMusicPlayer = null;
             if (null != ctrlFragment) {
-                ctrlFragment.setPlayer(mMusicPlayer);
+                ctrlFragment.setPlayer(null);
             }
             MusicListDialog dialog = (MusicListDialog) getSupportFragmentManager().findFragmentByTag(MusicListDialog.TAG);
             if (dialog != null) {
-                dialog.setPlayer(mMusicPlayer);
+                dialog.setPlayer(null);
             }
         }
     };

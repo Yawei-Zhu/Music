@@ -20,7 +20,9 @@ public final class Urls {
     public final String METHOD = "method";
     public final String METHOD_BILL = "baidu.ting.billboard.billList";
     public final String METHOD_PLAY = "baidu.ting.song.play";
+    public final String METHOD_SEARCH = "baidu.ting.search.catalogSug";
 
+//    type = 1-新歌榜,2-热歌榜,11-摇滚榜,12-爵士,16-流行,21-欧美金曲榜,22-经典老歌榜,23-情歌对唱榜,24-影视金曲榜,25-网络歌曲榜
     public final String TYPE = "type";
 
     public final String SIZE = "size";
@@ -30,6 +32,8 @@ public final class Urls {
     public final int SIZE_OFFSET = 0;
 
     public final String SONG_ID = "songid";
+
+    public final String QUERY = "query";
 
     public URL getBillUrl(int type, int size) throws MalformedURLException {
         // http://tingapi.ting.baidu.com/v1/restserver/ting?format=json&method=baidu.ting.billboard.billList&type=1&size=20&offset=0
@@ -47,12 +51,24 @@ public final class Urls {
         return new URL(url.toString());
     }
 
-    public URL getSongInfoUrl(int id) throws MalformedURLException {
+    public URL getSongInfoUrl(String id) throws MalformedURLException {
         StringBuilder url = new StringBuilder();
         url.append(BASE_URL)
                 .append("?").append(FORMAT).append("=").append(FORMAT_JSON)
                 .append("&").append(METHOD).append("=").append(METHOD_PLAY)
                 .append("&").append(SONG_ID).append("=").append(id);
+
+        Log.d(TAG, "getSongInfoUrl: url=" + url.toString());
+
+        return new URL(url.toString());
+    }
+
+    public URL getQueryUrl(String key) throws MalformedURLException {
+        StringBuilder url = new StringBuilder();
+        url.append(BASE_URL)
+                .append("?").append(FORMAT).append("=").append(FORMAT_JSON)
+                .append("&").append(METHOD).append("=").append(METHOD_SEARCH)
+                .append("&").append(QUERY).append("=").append(key);
 
         Log.d(TAG, "getSongInfoUrl: url=" + url.toString());
 

@@ -8,49 +8,39 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.wind.music.R;
-import com.wind.music.bean.BillBoardBean;
 import com.wind.music.bean.Song;
 import com.wind.music.dialog.MusicListDialog;
-import com.wind.music.fragment.MusicControllerFragment;
 import com.wind.music.fragment.BaseSongFragment;
-import com.wind.music.fragment.SongFragment;
+import com.wind.music.fragment.MusicControllerFragment;
+import com.wind.music.fragment.SearchSongFragment;
 import com.wind.music.service.PlayerService;
 import com.wind.music.util.MusicPlayer;
 import com.wind.music.util.Toasts;
 
 import java.util.List;
 
-public class SongActivity extends BaseActivity implements MusicControllerFragment.OnMusicListShowListener {
-    private static final String EXTRA_TYPE = "Extra.Type";
+public class SearchActivity extends BaseActivity implements MusicControllerFragment.OnMusicListShowListener {
     private final String TAG = getClass().getSimpleName();
 
     private MusicPlayer mMusicPlayer;
     private MusicControllerFragment ctrlFragment;
-    private SongFragment songFragment;
-    private int mType = SongFragment.TYPE_LOCAL;
+    private SearchSongFragment songFragment;
 
-    public static void start(Context context, int type) {
-        Intent intent = new Intent(context, SongActivity.class);
-        intent.putExtra(EXTRA_TYPE, type);
-        context.startActivity(intent);
+    public static void start(Context context) {
+        context.startActivity(new Intent(context, SearchActivity.class));
     }
 
-    /*
-     * activity lifecycle start
-     **********************************************************************************************/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_song);
-
-        Intent intent = getIntent();
-        mType = intent.getIntExtra(SongActivity.EXTRA_TYPE, SongFragment.TYPE_LOCAL);
-
+        setContentView(R.layout.activity_search);
         initLayout();
     }
 
@@ -67,20 +57,19 @@ public class SongActivity extends BaseActivity implements MusicControllerFragmen
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
     protected void onDestroy() {
-        finishLayout();
         super.onDestroy();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.menu_song, menu);
-        return true;
+        getMenuInflater().inflate(R.menu.menu_search, menu);
+
+        SearchView searchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
+        searchView.setOnQueryTextListener(mOnQueryTextListener);
+        searchView.setOnCloseListener(mOnCloseListener);
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -94,10 +83,6 @@ public class SongActivity extends BaseActivity implements MusicControllerFragmen
         }
         return true;
     }
-
-    /*
-     * activity lifecycle end
-     **********************************************************************************************/
 
     /*
      * mMusicPlayer start
@@ -156,13 +141,8 @@ public class SongActivity extends BaseActivity implements MusicControllerFragmen
      **********************************************************************************************/
 
     private void initLayout() {
-
-        songFragment = SongFragment.of(mType);
-        songFragment.setOnSongClickListener(selectSongListener);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
-            toolbar.setTitle(songFragment.getTitle());
             setSupportActionBar(toolbar);
         }
 
@@ -170,6 +150,9 @@ public class SongActivity extends BaseActivity implements MusicControllerFragmen
         if (actionbar != null) {
             actionbar.setDisplayHomeAsUpEnabled(true);
         }
+
+        songFragment = new SearchSongFragment();
+        songFragment.setOnSongClickListener(mSelectSongListener);
 
         ctrlFragment = new MusicControllerFragment();
 
@@ -180,21 +163,39 @@ public class SongActivity extends BaseActivity implements MusicControllerFragmen
                 .commit();
     }
 
-    private void finishLayout() {
+    private final SearchView.OnQueryTextListener mOnQueryTextListener = new SearchView.OnQueryTextListener() {
+        @Override
+        public boolean onQueryTextSubmit(String query) {
+            songFragment.query(query);
+            return true;
+        }
 
-        songFragment.setOnSongClickListener(null);
-        songFragment = null;
-        ctrlFragment = null;
-    }
+        @Override
+        public boolean onQueryTextChange(String newText) {
+            return false;
+        }
+    };
 
-    private final BaseSongFragment.OnSongClickListener selectSongListener =
+    private final SearchView.OnCloseListener mOnCloseListener = new SearchView.OnCloseListener() {
+        @Override
+        public boolean onClose() {
+            songFragment.cancel();
+            return true;
+        }
+    };
+
+    private final BaseSongFragment.OnSongClickListener mSelectSongListener =
             new BaseSongFragment.OnSongClickListener() {
 
                 @Override
                 public void onSongClick(List<Song> songs, int position) {
                     if (mMusicPlayer != null) {
-                        mMusicPlayer.setData(songs);
-                        mMusicPlayer.play(position);
+                        int index = mMusicPlayer.insert(0, songs.get(position));
+                        if (index >= 0) {
+                            mMusicPlayer.play(index);
+                        } else {
+                            Log.e(TAG, "Failed to insert song in media player.");
+                        }
                     }
                 }
             };

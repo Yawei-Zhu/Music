@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -26,7 +26,7 @@ public class PlayInfo {
 
     private int mode;
     private int index;
-    private List<BillBoardBean.Song> songs;
+    private List<Song> songs;
 
     public PlayInfo(Context context) {
         mPreference = context.getSharedPreferences(NAME, Context.MODE_PRIVATE);
@@ -35,7 +35,7 @@ public class PlayInfo {
         mode = mPreference.getInt(KEY_MODE, MusicPlayer.MODE_CYCLE);
         index = mPreference.getInt(KEY_INDEX, 0);
         String s = mPreference.getString(KEY_SONGS, "");
-        songs = gson.fromJson(s, new TypeToken<List<BillBoardBean.Song>>(){}.getType());
+        songs = gson.fromJson(s, new TypeToken<List<Song>>(){}.getType());
         if (songs == null) {
             songs = new LinkedList<>();
         }
@@ -63,7 +63,7 @@ public class PlayInfo {
         return index;
     }
 
-    public void setSongs(List<BillBoardBean.Song> songs) {
+    public void setSongs(List<Song> songs) {
         if (songs == null) {
             songs = new ArrayList<>();
         }
@@ -71,7 +71,7 @@ public class PlayInfo {
         mPreference.edit().putString(KEY_SONGS, gson.toJson(songs)).apply();
     }
 
-    public List<BillBoardBean.Song> getSongs() {
+    public List<Song> getSongs() {
         return songs;
     }
 }

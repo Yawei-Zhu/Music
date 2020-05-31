@@ -16,7 +16,7 @@ import android.widget.ImageButton;
 
 import com.wind.music.R;
 import com.wind.music.adapter.BriefSongAdapter;
-import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 import com.wind.music.util.MusicPlayer;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class MusicListDialog extends BaseDialog {
     public static final String TAG = MusicListDialog.class.getSimpleName();
     private MusicPlayer mMusicPlayer;
     private BriefSongAdapter mSongAdapter;
-    private List<BillBoardBean.Song> mSongs = new ArrayList<>();
+    private List<Song> mSongs = new ArrayList<>();
     private Button btMode;
 
     @Override
@@ -95,7 +95,7 @@ public class MusicListDialog extends BaseDialog {
         mSongAdapter = new BriefSongAdapter(getContext(), mSongs);
         mSongAdapter.setOnItemClickListener(new BriefSongAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(int viewId, BillBoardBean.Song item, int position) {
+            public void onItemClick(int viewId, Song item, int position) {
                 if (mMusicPlayer == null) {
                     return;
                 }

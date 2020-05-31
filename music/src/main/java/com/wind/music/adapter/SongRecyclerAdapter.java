@@ -30,7 +30,7 @@ public class SongRecyclerAdapter extends CommonAdapter<BillBoardBean.Song> {
         tvTitle.setText(song.getTitle());
 
         TextView tvSubtitle = holder.getView(R.id.tv_subtitle);
-        tvSubtitle.setText(song.getArtist_name() + " - " + song.getAlbum());
+        tvSubtitle.setText(song.getArtist_name() + " - " + song.getAlbum_title());
 
         ImageView ivPic = holder.getView(R.id.iv_pic);
         Glide.with(mContext).load(song.getPic_small()).into(ivPic);

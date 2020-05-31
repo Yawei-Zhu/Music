@@ -396,7 +396,7 @@ public class SongInfoBean extends BaseBean {
 
         private String show_link;
         private int free;
-        private int song_file_id;
+        private String song_file_id;
         private int file_size;
         private String file_extension;
         private int file_duration;
@@ -420,11 +420,11 @@ public class SongInfoBean extends BaseBean {
             this.free = free;
         }
 
-        public int getSong_file_id() {
+        public String getSong_file_id() {
             return song_file_id;
         }
 
-        public void setSong_file_id(int song_file_id) {
+        public void setSong_file_id(String song_file_id) {
             this.song_file_id = song_file_id;
         }
 

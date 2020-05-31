@@ -4,12 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothHeadset;
-import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Handler;
@@ -20,27 +18,20 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import com.google.gson.Gson;
-import com.wind.music.bean.BillBoardBean;
+import com.wind.music.bean.Song;
 import com.wind.music.bean.SongInfoBean;
 import com.wind.music.presenter.PlayerPresenter;
 import com.wind.music.presenter.PresenterFactory;
 import com.wind.music.util.MusicPlayer;
-import com.wind.music.util.Network;
-import com.wind.music.util.NetworkListener;
 import com.wind.music.util.PlayInfo;
-import com.wind.music.util.Urls;
 import com.wind.music.util.Utils;
 import com.wind.music.view.PlayerView;
 
-import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static android.media.CamcorderProfile.get;
 
 /**
  * Created by Administrator on 2017/5/18.
@@ -55,14 +46,13 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
     private final HashSet<MusicPlayer.OnPlayInfoListener> mListenerSet = new HashSet<>();
     private Timer mTimer;
     private PlayerPresenter mPresenter;
-    private BroadcastReceiver mHeadSetReceiver;
 
 
     @Override
     public void onCreate() {
         mPlayInfo = new PlayInfo(this);
         mTimer = new Timer();
-        mTimer.schedule(task, 200, 200);
+        mTimer.schedule(mTimerTask, 200, 200);
         mPresenter = PresenterFactory.createPlayerPresenter(this);
         initReceiver();
     }
@@ -78,10 +68,7 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
         mPresenter.setView(null);
         mPresenter = null;
 
-        if (mMediaPlayer != null) {
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
+        releasePlayer();
 
         mPlayInfo = null;
 
@@ -108,18 +95,17 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
     }
 
     @Override
-    public void onSongInfoLoaded(int songId, SongInfoBean songInfo) {
+    public void onSongInfoLoaded(String songId, SongInfoBean songInfo) {
         if (songInfo == null) {
             next();
             return;
         }
 
         int index = mPlayInfo.getIndex();
-        List<BillBoardBean.Song> songs = mPlayInfo.getSongs();
-        BillBoardBean.Song song = songs.get(index);
-        song.setSonginfo(songInfo.getSonginfo());
-        song.setBitrate(songInfo.getBitrate());
-        innerPlay(songInfo.getBitrate().getFile_link());
+        List<Song> songs = mPlayInfo.getSongs();
+        Song song = songs.get(index);
+        song.setSongInfoBean(songInfo);
+        innerPlay(song.getFile_link());
     }
 
     @Override
@@ -145,6 +131,12 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
         mMediaPlayer.setOnInfoListener(onInfoListener);
     }
 
+    private void releasePlayer() {
+        if (mMediaPlayer != null) {
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+    }
 
     private void innerPlay(String path) {
         if (Utils.isNetworkPath(path)) {
@@ -164,50 +156,8 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
         mMediaPlayer.prepareAsync();
     }
 
-    private String getPath(BillBoardBean.Song song) {
-        String path = song.getPath();
-        if (!song.isIs_local()) {
-            if (song.getBitrate() == null) {
-                mPresenter.loadSongInfo(song.getSong_id());
-            } else {
-                path = song.getBitrate().getFile_link();
-            }
-        }
-        return path;
-    }
-
-    @Override
-    public void play() {
-        int index = mPlayInfo.getIndex();
-        List<BillBoardBean.Song> songs = mPlayInfo.getSongs();
-        if (songs.size() > index && index >= 0) {
-            BillBoardBean.Song song = songs.get(index);
-
-            String path = getPath(song);
-            if (TextUtils.isEmpty(path)) {
-                return;
-            }
-
-            innerPlay(path);
-        }
-    }
-
     @Override
     public void play(int index) {
-        int oldIndex = mPlayInfo.getIndex();
-
-        List<BillBoardBean.Song> songs = mPlayInfo.getSongs();
-        if (songs.size() > oldIndex && oldIndex >= 0) {
-            BillBoardBean.Song song = songs.get(oldIndex);
-            if (!song.isIs_local()) {
-                mPresenter.cancelSongInfo(song.getSong_id());
-                String path = getPath(song);
-                if (!TextUtils.isEmpty(path)) {
-                    mPresenter.cancelSong(path);
-                }
-            }
-        }
-
         pause();
         mPlayInfo.setIndex(index);
         mPausePosition = 0;
@@ -215,7 +165,36 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
     }
 
     @Override
+    public void play() {
+        int index = mPlayInfo.getIndex();
+        List<Song> songs = mPlayInfo.getSongs();
+        if (songs.size() > index && index >= 0) {
+            Song song = songs.get(index);
+            String path = song.getFile_link();
+
+            if (TextUtils.isEmpty(path)) {
+                mPresenter.loadSongInfo(song.getSong_id());
+            } else {
+                innerPlay(path);
+            }
+        }
+    }
+
+    @Override
     public void pause() {
+        List<Song> songs = mPlayInfo.getSongs();
+        int index = mPlayInfo.getIndex();
+        if (songs.size() > index && index >= 0) {
+            Song song = songs.get(index);
+            if (!song.isLocal()) {
+                mPresenter.cancelSongInfo(song.getSong_id());
+                String path = song.getFile_link();
+                if (!TextUtils.isEmpty(path)) {
+                    mPresenter.cancelSong(path);
+                }
+            }
+        }
+
         if (mMediaPlayer != null) {
             mPausePosition = mMediaPlayer.getCurrentPosition() - 500;
             if (mPausePosition < 0) {
@@ -265,8 +244,8 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
     }
 
     @Override
-    public void setData(List<BillBoardBean.Song> data) {
-        List<BillBoardBean.Song> songs = mPlayInfo.getSongs();
+    public void setData(List<Song> data) {
+        List<Song> songs = mPlayInfo.getSongs();
         songs.clear();
         if (data != null) {
             songs.addAll(data);
@@ -275,14 +254,24 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
     }
 
     @Override
-    public List<BillBoardBean.Song> getData() {
+    public List<Song> getData() {
         return mPlayInfo.getSongs();
     }
 
     @Override
-    public int insert(int index, BillBoardBean.Song song) {
-        List<BillBoardBean.Song> songs = mPlayInfo.getSongs();
-        if (index < songs.size()) {
+    public int insert(int index, Song song) {
+        if (song == null) {
+            return -1;
+        }
+
+        List<Song> songs = mPlayInfo.getSongs();
+        for (int i = 0; i < songs.size(); i++) {
+            if (song.equals(songs.get(i))) {
+                return i;
+            }
+        }
+
+        if (0 <= index && index < songs.size()) {
             songs.add(index, song);
             int tmpIndex = mPlayInfo.getIndex();
             if (tmpIndex >= index) {
@@ -290,14 +279,15 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
             }
         } else {
             songs.add(song);
+            index = songs.size() - 1;
         }
         mPlayInfo.setSongs(songs);
-        return 0;
+        return index;
     }
 
     @Override
-    public BillBoardBean.Song remove(int index) {
-        List<BillBoardBean.Song> songs = mPlayInfo.getSongs();
+    public Song remove(int index) {
+        List<Song> songs = mPlayInfo.getSongs();
         int tmpIndex = mPlayInfo.getIndex();
         if (index < songs.size()) {
             if (tmpIndex > index) {
@@ -308,7 +298,7 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
                 mPausePosition = 0;
             }
             mPlayInfo.setIndex(tmpIndex);
-            BillBoardBean.Song song = songs.remove(index);
+            Song song = songs.remove(index);
             if (song != null) {
                 mPlayInfo.setSongs(songs);
             }
@@ -358,7 +348,6 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
         if (listener != null) {
             synchronized (mListenerSet) {
                 mListenerSet.add(listener);
-                mListenerSet.notifyAll();
             }
         }
     }
@@ -378,16 +367,14 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
         filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        mHeadSetReceiver = new HeadSetReceiver();
         registerReceiver(mHeadSetReceiver, filter);
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.registerMediaButtonEventReceiver();
     }
 
     private void exitReceiver() {
         unregisterReceiver(mHeadSetReceiver);
-        mHeadSetReceiver = null;
     }
+
+    private BroadcastReceiver mHeadSetReceiver = new HeadSetReceiver();
 
     private class HeadSetReceiver extends BroadcastReceiver {
         @Override
@@ -396,13 +383,13 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
                 KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                 int keyCode = event.getKeyCode();
                 Log.d(TAG, "onReceive: media button keyCode=" + keyCode);
-                if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-                    if (isPlaying()) {
-                        pause();
-                    } else {
-                        play();
-                    }
-                }
+//                if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
+//                    if (isPlaying()) {
+//                        pause();
+//                    } else {
+//                        play();
+//                    }
+//                }
             } else if (Intent.ACTION_HEADSET_PLUG.equals(intent.getAction())) {
                 int state = intent.getIntExtra("state", -1);
                 Log.d(TAG, "onReceive: headset plug state=" + state);
@@ -458,8 +445,7 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
                 case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
                     break;
                 case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
-                    mMediaPlayer.release();
-                    mMediaPlayer = null;
+                    releasePlayer();
                     play();
                     break;
                 case MediaPlayer.MEDIA_ERROR_TIMED_OUT:
@@ -483,12 +469,12 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
 
 
     @SuppressLint("HandlerLeak")
-    private final Handler handler = new Handler() {
+    private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             int mIndex = mPlayInfo.getIndex();
-            List<BillBoardBean.Song> mSongs = mPlayInfo.getSongs();
-            BillBoardBean.Song song = mIndex < mSongs.size() ? mSongs.get(mIndex) : null;
+            List<Song> mSongs = mPlayInfo.getSongs();
+            Song song = mIndex < mSongs.size() ? mSongs.get(mIndex) : null;
             int position = mMediaPlayer != null ? mMediaPlayer.getCurrentPosition() : 0;
             synchronized (mListenerSet) {
                 for (MusicPlayer.OnPlayInfoListener l : mListenerSet) {
@@ -498,12 +484,12 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
         }
     };
 
-    private final TimerTask task = new TimerTask() {
+    private final TimerTask mTimerTask = new TimerTask() {
         @Override
         public void run() {
             synchronized (mListenerSet) {
                 if (!mListenerSet.isEmpty()) {
-                    handler.obtainMessage(1).sendToTarget();
+                    mHandler.obtainMessage(1).sendToTarget();
                 }
             }
         }
@@ -513,22 +499,22 @@ public class PlayerService extends Service implements PlayerView, MusicPlayer {
     private class PlayerBinder extends Binder implements MusicPlayer {
 
         @Override
-        public void setData(List<BillBoardBean.Song> data) {
+        public void setData(List<Song> data) {
             PlayerService.this.setData(data);
         }
 
         @Override
-        public List<BillBoardBean.Song> getData() {
+        public List<Song> getData() {
             return PlayerService.this.getData();
         }
 
         @Override
-        public int insert(int index, BillBoardBean.Song song) {
+        public int insert(int index, Song song) {
             return PlayerService.this.insert(index, song);
         }
 
         @Override
-        public BillBoardBean.Song remove(int index) {
+        public Song remove(int index) {
             return PlayerService.this.remove(index);
         }
 
